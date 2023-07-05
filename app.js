@@ -15,7 +15,6 @@ const APP = express();
 const BASE_URI = process.env.PASSENGER_BASE_URI || '/';
 const JSON_DATA = read_file(relative_path("public/hierarchy.json"), "utf-8");
 const HIDDEN_JSON_DATA = read_file(relative_path("public/hidden-hierarchy.json"), "utf-8");
-const INDEX_BODY = read_file(relative_path("public/body.ejs"), "utf-8");
 
 APP.set("view engine", "ejs");
 APP.get('*', (req, res) => {
@@ -30,7 +29,8 @@ APP.get('*', (req, res) => {
     modified_req = path.join("public", modified_req);
     // default ood request
     if (modified_req == "public") {
-        rendered_body = ejs.render(INDEX_BODY, {
+        body_file_contents = read_file(relative_path("public/module-explorer.ejs"), "utf-8");
+        rendered_body = ejs.render(body_file_contents, {
                 JSONDATA: JSON.stringify(JSON_DATA),
                 JSONDATA_HIDDEN: JSON.stringify(HIDDEN_JSON_DATA)
             }
