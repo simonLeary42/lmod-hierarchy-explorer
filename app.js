@@ -25,6 +25,7 @@ APP.get('*', (req, res) => {
         `
         res.status(404).send(err_msg);
     }
+    root = "https://" + req.get("host") + BASE_URI;
     modified_req = req.url.replace(BASE_URI, '');
     modified_req = path.join("public", modified_req);
     // default ood request
@@ -32,12 +33,13 @@ APP.get('*', (req, res) => {
         body_file_contents = read_file(relative_path("public/module-explorer.ejs"), "utf-8");
         rendered_body = ejs.render(body_file_contents, {
                 JSONDATA: JSON.stringify(JSON_DATA),
-                JSONDATA_HIDDEN: JSON.stringify(HIDDEN_JSON_DATA)
+                JSONDATA_HIDDEN: JSON.stringify(HIDDEN_JSON_DATA),
+                root: root
             }
         )
         res.render(relative_path("/public/ood-header"), {
                 title: "Module Explorer",
-                root: "https://" + req.get("host") + BASE_URI,
+                root: root,
                 body: rendered_body
             }
         )
