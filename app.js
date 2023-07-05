@@ -25,10 +25,11 @@ APP.get('*', (req, res) => {
         `
         res.status(404).send(err_msg);
     }
+    // "<%- root %>/index.html" -> "ood.unity.rc.umass.edu/pun/dev/modules4/public/index.html"
     root = "https://" + req.get("host") + BASE_URI;
     modified_req = req.url.replace(BASE_URI, '');
     modified_req = path.join("public", modified_req);
-    // default ood request
+    // default request
     if (modified_req == "public") {
         body_file_contents = read_file(relative_path("public/module-explorer.ejs"), "utf-8");
         rendered_body = ejs.render(body_file_contents, {
@@ -37,7 +38,7 @@ APP.get('*', (req, res) => {
                 root: root
             }
         )
-        res.render(relative_path("/public/ood-header"), {
+        res.render(relative_path("public/ood-header"), {
                 title: "Module Explorer",
                 root: root,
                 body: rendered_body
