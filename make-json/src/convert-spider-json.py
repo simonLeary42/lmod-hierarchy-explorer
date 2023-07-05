@@ -30,6 +30,8 @@ if sys.stdin.isatty():
     raise ValueError("sys.stdin is a TTY, it should be the output from `spider2lmod-json.sh`")
 json_data = json.load(sys.stdin)
 
+print("converting json...", file=sys.stderr)
+
 # build the dicts
 modules = {}
 hidden_modules = {}

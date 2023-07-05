@@ -14,11 +14,13 @@ runspider() {
         sed "s|$spack_root/share/spack/lmod/|/modules/spack_modulefiles/|g"
 }
 
+echo "spider noarch..." >&2
 echo "{"
 echo "\"noarch\" :"
 MODULEPATH="/modules/modulefiles/noarch" runspider
 echo ","
 for arch in ${arches[@]}; do
+    echo "spider $arch..." >&2
     echo "\"$arch\" :"
     MODULEPATH="/modules/modulefiles/$arch:/modules/spack_modulefiles/$os-$arch/Core" runspider
     # print a comma for each iteration but not the last iteration
