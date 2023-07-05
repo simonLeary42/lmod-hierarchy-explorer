@@ -32,10 +32,17 @@ fs.readFile(index_body_file_location, 'utf8', (err, body_file_content) => {
 var baseUri   = process.env.PASSENGER_BASE_URI || '/';
 app.set('view engine', 'ejs');
 app.get('*', (req, res) => {
-    modified_req_url = req.url.replace(baseUri, "/public");
+    if(!req.url.includes(baseUri)){
+        err_msg = `\
+            invalid request "${req.url}"\n\
+            request should contain "${baseUri}"\
+        `
+        res.status(404).send(err_msg);
+    }
+    modified_req = req.url.replace(baseUri, '');
+    modified_req = path.join("public", modified_req);
     // default OOD request
-    if (modified_req_url == "/public"){
-        // modified_req_url = "/public/index.html";
+    if (modified_req == "public"){
         rendered_body = ejs.render(index_body,
             {
                 JSONDATA: JSON.stringify(jsonData),
@@ -51,7 +58,7 @@ app.get('*', (req, res) => {
         )
         return;
     }
-    const filePath = path.join(__dirname, modified_req_url);
+    const filePath = path.join(__dirname, modified_req);
     res.sendFile(filePath, (err) => {
     if (err) {
         res.status(404).send(`File "${filePath}" not found`);
