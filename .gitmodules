@@ -1,0 +1,3 @@
+[submodule "jsonTreeViewer"]
+    path = jsonTreeViewer
+    url = https://github.com/simonleary-umass-edu/jsonTreeViewer
