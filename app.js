@@ -1,8 +1,8 @@
-const express = require('express');
+const express = require("express");
 const app = express();
-const path = require('path');
-const fs = require('fs');
-const ejs = require('ejs');
+const path = require("path");
+const fs = require("fs");
+const ejs = require("ejs");
 
 function relative_path(_path) {
     return path.join(__dirname, _path);
@@ -17,7 +17,7 @@ const json_data_hidden = read_file(relative_path("public/hidden-hierarchy.json")
 const index_body = read_file(relative_path("public/body.ejs"), "utf-8");
 
 var base_uri = process.env.PASSENGER_BASE_URI || '/';
-app.set('view engine', 'ejs');
+app.set("view engine", "ejs");
 app.get('*', (req, res) => {
     if (!req.url.includes(base_uri)) {
         err_msg = `\
@@ -52,5 +52,5 @@ app.get('*', (req, res) => {
     }
 });
 app.listen(3000, () => {
-    console.log('server running on port 3000');
+    console.log("server running on port 3000");
 });
