@@ -3,31 +3,18 @@ const app = express();
 const path = require('path');
 const fs = require('fs');
 const ejs = require('ejs');
-const json_file_location = path.join(__dirname, "public/hierarchy.json");
-const hidden_json_file_location = path.join(__dirname, "public/hidden-hierarchy.json");
-const index_body_file_location = path.join(__dirname, "public/body.ejs");
 
-var jsonData;
-fs.readFile(json_file_location, 'utf8', (err, json_file_content) => {
-    if (err) {
-        throw new Error(err)
-    }
-    jsonData = json_file_content;
-});
-var jsonData_hidden;
-fs.readFile(hidden_json_file_location, 'utf8', (err, json_file_content) => {
-    if (err) {
-        throw new Error(err)
-    }
-    jsonData_hidden = json_file_content;
-});
-var index_body;
-fs.readFile(index_body_file_location, 'utf8', (err, body_file_content) => {
-    if (err) {
-        throw new Error(err)
-    }
-    index_body = body_file_content;
-});
+function relative_path(_path){
+    return path.join(__dirname, _path);
+}
+
+function read_file(path, encoding) {
+    return fs.readFileSync(path, encoding, flag='r');
+}
+
+const jsonData = read_file(relative_path("public/hierarchy.json"), "utf-8");
+const jsonData_hidden = read_file(relative_path("public/hidden-hierarchy.json"), "utf-8");
+const index_body = read_file(relative_path("public/body.ejs"), "utf-8");
 
 var baseUri   = process.env.PASSENGER_BASE_URI || '/';
 app.set('view engine', 'ejs');
@@ -49,7 +36,7 @@ app.get('*', (req, res) => {
                 JSONDATA_HIDDEN: JSON.stringify(jsonData_hidden)
             }
         )
-        res.render(path.join(__dirname, "/public/ood-header"),
+        res.render(relative_path("/public/ood-header"),
             {
                 title: "Module Explorer",
                 baseUri: "https://ood.unity.rc.umass.edu/pun/dev/modules4/",
@@ -58,12 +45,13 @@ app.get('*', (req, res) => {
         )
         return;
     }
-    const filePath = path.join(__dirname, modified_req);
-    res.sendFile(filePath, (err) => {
-    if (err) {
-        res.status(404).send(`File "${filePath}" not found`);
+    request_path = relative_path(modified_req);
+    try{
+        content = read_file(request_path);
+        res.send(content);
+    } catch {
+        res.status(404).send(`Failed to read file "${request_path}"`);
     }
-    });
 });
 app.listen(3000, () => {
     console.log('Server running on port 3000');
