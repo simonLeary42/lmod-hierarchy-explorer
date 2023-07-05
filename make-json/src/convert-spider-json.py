@@ -39,7 +39,7 @@ for arch, module_name2modulefile in json_data.items():
     for module_name, modulefile2module_info in module_name2modulefile.items():
         for modulefile, modulefile_info in modulefile2module_info.items():
             parent_dir = modulefile_info["mpath"]
-            name = os.path.basename(os.path.dirname(modulefile))
+            name = os.path.basename(os.path.dirname(modulefile)) # "/a/b/c" -> "a/b" -> "b"
             version = modulefile_info["Version"]
             if modulefile_info["hidden"]:
                 nested_dict_append(hidden_modules, arch, parent_dir, name, version)

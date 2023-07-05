@@ -7,6 +7,7 @@ os="linux-ubuntu20.04"
 spack_root="/modules/spack/0.20.0"
 arches=("x86_64" "ppc64le" "aarch64")
 
+# this is (heavily) inspired by https://github.com/juselius/spiderman
 runspider() {
     /usr/share/lmod/lmod/libexec/spider -o spider-json $MODULEPATH | \
         sed ':a;N;$!ba;s/\n//g; s/[]][[]/,/g' | \
