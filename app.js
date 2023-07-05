@@ -1,5 +1,4 @@
 const express = require("express");
-const APP = express();
 const path = require("path");
 const fs = require("fs");
 const ejs = require("ejs");
@@ -12,6 +11,7 @@ function read_file(path, encoding) {
     return fs.readFileSync(path, encoding, flag = 'r');
 }
 
+const APP = express();
 const BASE_URI = process.env.PASSENGER_BASE_URI || '/';
 const JSON_DATA = read_file(relative_path("public/hierarchy.json"), "utf-8");
 const HIDDEN_JSON_DATA = read_file(relative_path("public/hidden-hierarchy.json"), "utf-8");
