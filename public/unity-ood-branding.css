@@ -1,0 +1,32 @@
+.navbar-inverse{
+    border-color: unset;
+    color: #881d1d;
+}
+
+.navbar {
+  background-color: #881d1d;
+  padding: 0.5rem 1rem;
+}
+
+.navbar-brand {
+    display: inline-block;
+    padding-top: 0.3125rem;
+    padding-bottom: 0.3125rem;
+    margin-right: 1rem;
+    font-size: 1.25rem;
+    line-height: inherit;
+    white-space: nowrap;
+}
+
+.navbar-light {
+  background-color: #881d1d;
+}
+
+.navbar-dark ul.navbar-nav > li.nav-item > a:focus, .navbar-dark ul.navbar-nav > li.nav-item.show > a {
+  background-color: #631d1d;
+  border-radius: 0.25em;
+}
+.navbar-light ul.navbar-nav > li.nav-item > a:focus, .navbar-light ul.navbar-nav > li.nav-item.show > a {
+  background-color: #631d1d;
+  border-radius: 0.25em;
+}

@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title><%- title %></title>
+  <meta charset="UTF-8">
+
+  <link rel="stylesheet" type="text/css" href="<%- baseUri %>/bootstrap-3.3.7/css/bootstrap.min.css">
+  <link rel="stylesheet" type="text/css" href="<%- baseUri %>/ood-breadcrumbs.css">
+  <link rel="stylesheet" type="text/css" href="<%- baseUri %>/unity-ood-branding.css">
+</head>
+<body>
+
+<header>
+  <!-- navbar  -->
+  <nav class="ood-appkit navbar navbar-inverse navbar-static-top">
+    <div class="container-fluid">
+      <!-- Brand and toggle get grouped for better mobile display -->
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target=".navbar-responsive-collapse">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <ul class="navbar-breadcrumbs">
+          <li><a href="/pun/sys/dashboard/">Unity OnDemand</a></li>
+          <li><a href=""><%- title %></a></li>
+        </ul>
+      </div>
+
+      <!-- Collect the nav links, forms, and other content for toggling -->
+      <div class="collapse navbar-collapse navbar-responsive-collapse">
+        <ul class="nav navbar-nav">
+        </ul>
+      </div><!-- /.navbar-collapse -->
+    </div><!-- /.container-fluid -->
+  </nav>
+</header>
+
+<div class="container" role="main">
+
+  <!-- page contents here -->
+  <%- body %>
+</div>
+</body>
+</html>
