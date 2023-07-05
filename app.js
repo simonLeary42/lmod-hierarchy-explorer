@@ -37,7 +37,7 @@ APP.get('*', (req, res) => {
         )
         res.render(relative_path("/public/ood-header"), {
                 title: "Module Explorer",
-                BASE_URI: "https://ood.unity.rc.umass.edu/pun/dev/modules4/",
+                root: "https://" + req.get("host") + BASE_URI,
                 body: rendered_body
             }
         )
