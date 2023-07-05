@@ -7,8 +7,8 @@ function relative_path(_path) {
     return path.join(__dirname, _path);
 }
 
-function read_file(path, encoding) {
-    return fs.readFileSync(path, encoding, flag = 'r');
+function read_file(_path, encoding) {
+    return fs.readFileSync(_path, encoding, flag = 'r');
 }
 
 const APP = express();
