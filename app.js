@@ -3,6 +3,8 @@ const ejs = require("ejs")
 const path = require("path")
 const express = require("express")
 
+const BASE_URI = process.env.PASSENGER_BASE_URI
+
 
 function relative_path(_path) {
     return path.join(__dirname, _path)
@@ -13,7 +15,6 @@ function read_file(_path, encoding) {
 }
 
 const APP = express()
-const BASE_URI = process.env.PASSENGER_BASE_URI || '/'
 const JSON_DATA = read_file(relative_path("public/hierarchy.json"), "utf-8")
 const HIDDEN_JSON_DATA = read_file(relative_path("public/hidden-hierarchy.json"), "utf-8")
 
