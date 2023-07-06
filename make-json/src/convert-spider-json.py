@@ -17,6 +17,11 @@ HIDDEN_PARENT_DIRS = [
     "/modules/uri_modulefiles"
 ]
 
+VERSION_BLACKLIST = [
+    "latest",
+    "default"
+]
+
 def nested_dict_append(_dict, key1, key2, value):
     if key1 not in _dict.keys():
         _dict[key1] = {}
@@ -39,6 +44,8 @@ for arch, module_name2modulefile in json_data.items():
             parent_dir = modulefile_info["mpath"]
             name = os.path.basename(os.path.dirname(modulefile)) # "/a/b/c" -> "a/b" -> "b"
             version = modulefile_info["Version"]
+            if version in VERSION_BLACKLIST:
+                continue
             name_version = f"{name}/<strong>{version}</strong>"
             if modulefile_info["hidden"]:
                 nested_dict_append(hidden_modules, arch, parent_dir, name_version)
@@ -62,12 +69,6 @@ for dir in HIDDEN_PARENT_DIRS:
             empty_arches.append(arch)
     for arch in empty_arches:
         modules.pop(arch)
-
-# remove any version that is just "latest"
-for _dict in [modules, hidden_modules]:
-    for arch, parent_dir2name in _dict.items():
-        for parent_dir, names in parent_dir2name.items():
-            names = [x for x in names if not x.endswith("/latest")]
 
 # remove duplicate modules
 for _dict in [modules, hidden_modules]:
