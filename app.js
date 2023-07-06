@@ -6,10 +6,6 @@ const express = require("express")
 const BASE_URI = process.env.PASSENGER_BASE_URI
 const TITLE = "Unity Module Explorer"
 
-function is_rhode_island_host(host){
-    return host.endsWith("uri.edu")
-}
-
 function relative_path(_path) {
     return path.join(__dirname, _path)
 }
@@ -38,10 +34,6 @@ APP.get('*', (req, res) => {
     const regex = /public[\/|\\]?$/ // `public` or `public/` or `public\`
     if (regex.test(modified_req)) {
         root = "https://" + req.get("host") + BASE_URI
-        branding_css_file = root + "/ood-template.css"
-        if (is_rhode_island_host(req.get("host"))){
-            branding_css_file = root + "/ood-template-rhode-island.css"
-        }
         body_file_contents = read_file(relative_path("public/module-explorer.ejs"), "utf-8")
         rendered_body = ejs.render(body_file_contents, {
             title: TITLE,
@@ -51,7 +43,7 @@ APP.get('*', (req, res) => {
         })
         res.render(relative_path("public/ood-template"), {
             title: TITLE,
-            branding_css_file: branding_css_file,
+            branding_css_file: root + "/ood-template.css",
             body: rendered_body
         })
         return
