@@ -17,14 +17,12 @@ HIDDEN_PARENT_DIRS = [
     "/modules/uri_modulefiles"
 ]
 
-def nested_dict_append(_dict, key1, key2, key3, value):
+def nested_dict_append(_dict, key1, key2, value):
     if key1 not in _dict.keys():
         _dict[key1] = {}
     if key2 not in _dict[key1].keys():
-        _dict[key1][key2] = {}
-    if key3 not in _dict[key1][key2].keys():
-        _dict[key1][key2][key3] = []
-    _dict[key1][key2][key3].append(value)
+        _dict[key1][key2] = []
+    _dict[key1][key2].append(value)
 
 if sys.stdin.isatty():
     raise ValueError("sys.stdin is a TTY, it should be the output from `spider2lmod-json.sh`")
@@ -41,10 +39,11 @@ for arch, module_name2modulefile in json_data.items():
             parent_dir = modulefile_info["mpath"]
             name = os.path.basename(os.path.dirname(modulefile)) # "/a/b/c" -> "a/b" -> "b"
             version = modulefile_info["Version"]
+            name_version = f"{name}/<strong>{version}</strong>"
             if modulefile_info["hidden"]:
-                nested_dict_append(hidden_modules, arch, parent_dir, name, version)
+                nested_dict_append(hidden_modules, arch, parent_dir, name_version)
             else:
-                nested_dict_append(modules, arch, parent_dir, name, version)
+                nested_dict_append(modules, arch, parent_dir, name_version)
 
 # hide the hidden directories
 for dir in HIDDEN_PARENT_DIRS:
@@ -67,26 +66,14 @@ for dir in HIDDEN_PARENT_DIRS:
 # remove any version that is just "latest"
 for _dict in [modules, hidden_modules]:
     for arch, parent_dir2name in _dict.items():
-        for parent_dir, name2versions in parent_dir2name.items():
-            for name, versions in name2versions.items():
-                if "latest" in versions:
-                    _dict[arch][parent_dir][name] = [x for x in versions if x != "latest"]
+        for parent_dir, names in parent_dir2name.items():
+            names = [x for x in names if not x.endswith("/latest")]
 
 # remove duplicate modules
 for _dict in [modules, hidden_modules]:
     for arch, parent_dir2name in _dict.items():
-        for parent_dir, name2versions in parent_dir2name.items():
-            for name, versions in name2versions.items():
-                if len(versions) > 1:
-                    _dict[arch][parent_dir][name] = [*set(versions)]
-
-# convert single-item lists to just single items ["8.0"] -> "8.0"
-for _dict in [modules, hidden_modules]:
-    for arch, parent_dir2name in _dict.items():
-        for parent_dir, name2versions in parent_dir2name.items():
-            for name, versions in name2versions.items():
-                if len(versions) == 1:
-                    _dict[arch][parent_dir][name] = versions[0]
+        for parent_dir, names in parent_dir2name.items():
+            names = [*set(names)]
 
 # put parent directories in order of how many modules they provide
 for _dict in [modules, hidden_modules]:
@@ -96,8 +83,8 @@ for _dict in [modules, hidden_modules]:
 # put modules in alphabetical order
 for _dict in [modules, hidden_modules]:
     for arch, parent_dir2name in _dict.items():
-        for parent_dir, name2versions in parent_dir2name.items():
-            _dict[arch][parent_dir] = dict(sorted(name2versions.items()))
+        for parent_dir, names in parent_dir2name.items():
+            _dict[arch][parent_dir] = sorted(names)
 
 with open("hierarchy.json", 'w') as json_out_file:
     json.dump(modules, json_out_file)
