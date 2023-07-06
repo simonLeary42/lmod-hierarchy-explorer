@@ -27,23 +27,23 @@
     <h4> Hidden Modules </h4>
 </div>
 <script>
-    const jsonData = JSON.parse(<%- JSONDATA %>);
-    const jsonData_hidden = JSON.parse(<%- JSONDATA_HIDDEN %>);
-    var wrapper = document.getElementById("json-tree-wrapper");
-    var tree = jsonTree.create(jsonData, wrapper);
-    var wrapper_hidden = document.getElementById("json-tree-wrapper-hidden");
-    var tree_hidden = jsonTree.create(jsonData_hidden, wrapper_hidden);
+    const jsonData = JSON.parse(<%- JSONDATA %>)
+    const jsonData_hidden = JSON.parse(<%- JSONDATA_HIDDEN %>)
+    var wrapper = document.getElementById("json-tree-wrapper")
+    var tree = jsonTree.create(jsonData, wrapper)
+    var wrapper_hidden = document.getElementById("json-tree-wrapper-hidden")
+    var tree_hidden = jsonTree.create(jsonData_hidden, wrapper_hidden)
     document.getElementById('expand_collapse_all').addEventListener('change', function() {
         if(!!this.checked){
-            tree.expand();
-            tree_hidden.expand();
+            tree.expand()
+            tree_hidden.expand()
         }else{
-            tree.collapse();
-            tree_hidden.collapse();
+            tree.collapse()
+            tree_hidden.collapse()
         }
-    });
+    })
     document.getElementById('show_hidden').addEventListener('change', function() {
-        hidden_modules_wrapper = document.getElementById("json-tree-wrapper-hidden");
-        hidden_modules_wrapper.classList.toggle("display_none");
-    });
+        hidden_modules_wrapper = document.getElementById("json-tree-wrapper-hidden")
+        hidden_modules_wrapper.classList.toggle("display_none")
+    })
 </script>
