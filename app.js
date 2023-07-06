@@ -28,12 +28,12 @@ APP.get('*', (req, res) => {
         res.status(404).send(err_msg)
     }
     // "<%- root %>/index.html" -> "ood.unity.rc.umass.edu/pun/dev/modules4/public/index.html"
-    root = "https://" + req.get("host") + BASE_URI
     modified_req = req.url.replace(BASE_URI, '')
     modified_req = path.join("public", modified_req)
     // a request for the BASE_URI is transformed above to be just `public`
     const regex = /public[\/|\\]?$/ // `public` or `public/` or `public\`
     if (regex.test(modified_req)) {
+        root = "https://" + req.get("host") + BASE_URI
         body_file_contents = read_file(relative_path("public/module-explorer.ejs"), "utf-8")
         rendered_body = ejs.render(body_file_contents, {
             JSONDATA: JSON.stringify(JSON_DATA),
