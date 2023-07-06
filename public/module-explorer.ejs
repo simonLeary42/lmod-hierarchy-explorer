@@ -1,36 +1,28 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Unity Module Explorer</title>
-    <link href="<%- root %>/jsonTree.css" rel="stylesheet" />
-    <script src="<%- root %>/jsonTree.js"></script>
-    <style>
-        html * {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
-        }
-        .display_none * {
-            display: none;
-        }
-    </style>
-</head>
-<body>
-    <h2>Unity Module Explorer</h2>
-    <p>
-        It's recommended that you read the <a href="https://docs.unity.rc.umass.edu/software/module-intro.html">Unity documentation on Environment Modules</a>.
-    </p>
-    <input type="checkbox" id="expand_collapse_all" />
-    <label for="expand_collapse_all">expand/collapse all</label>
-    <br>
-    <input type="checkbox" id="show_hidden" />
-    <label for="show_hidden">show hidden modules</label>
-    <div id="json-tree-wrapper">
-        <h3> modules </h3>
-    </div>
-    <div id="json-tree-wrapper-hidden" class="display_none">
-        <h3> hidden modules </h3>
-    </div>
-</body>
+<link href="<%- root %>/jsonTree.css" rel="stylesheet" />
+<script src="<%- root %>/jsonTree.js"></script>
+<style>
+    html * {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+    }
+    .display_none * {
+        display: none;
+    }
+</style>
+<h2>Unity Module Explorer</h2>
+<p>
+    It's recommended that you read the <a href="https://docs.unity.rc.umass.edu/software/module-intro.html">Unity documentation on Environment Modules</a>.
+</p>
+<input type="checkbox" id="expand_collapse_all" />
+<label for="expand_collapse_all">expand/collapse all</label>
+<br>
+<input type="checkbox" id="show_hidden" />
+<label for="show_hidden">show hidden modules</label>
+<div id="json-tree-wrapper">
+    <h3> modules </h3>
+</div>
+<div id="json-tree-wrapper-hidden" class="display_none">
+    <h3> hidden modules </h3>
+</div>
 <script>
     const jsonData = JSON.parse(<%- JSONDATA %>);
     const jsonData_hidden = JSON.parse(<%- JSONDATA_HIDDEN %>);
@@ -52,4 +44,3 @@
         hidden_modules_wrapper.classList.toggle("display_none");
     });
 </script>
-</html>
