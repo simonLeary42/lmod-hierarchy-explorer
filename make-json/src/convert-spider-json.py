@@ -46,7 +46,7 @@ for arch, module_name2modulefile in json_data.items():
             version = modulefile_info["Version"]
             if version in VERSION_BLACKLIST:
                 continue
-            name_version = f"{name}<strong>/{version}</strong>"
+            name_version = f"<strong>{name}</strong>/{version}"
             if modulefile_info["hidden"]:
                 nested_dict_append(hidden_modules, arch, parent_dir, name_version)
             else:
