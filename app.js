@@ -29,20 +29,21 @@ APP.get('*', (req, res) => {
     root = "https://" + req.get("host") + BASE_URI;
     modified_req = req.url.replace(BASE_URI, '');
     modified_req = path.join("public", modified_req);
-    // default request
-    if (modified_req == "public") {
+    // a request for the BASE_URI is transformed above to be just `public`
+    const regex = /public(?:$|\\$|\/$)/; // `public` or `public/` or `public\`
+    if (regex.test(modified_req)) {
         body_file_contents = read_file(relative_path("public/module-explorer.ejs"), "utf-8");
         rendered_body = ejs.render(body_file_contents, {
-                JSONDATA: JSON.stringify(JSON_DATA),
-                JSONDATA_HIDDEN: JSON.stringify(HIDDEN_JSON_DATA),
-                root: root
-            }
+            JSONDATA: JSON.stringify(JSON_DATA),
+            JSONDATA_HIDDEN: JSON.stringify(HIDDEN_JSON_DATA),
+            root: root
+        }
         )
         res.render(relative_path("public/ood-header"), {
-                title: "Module Explorer",
-                root: root,
-                body: rendered_body
-            }
+            title: "Module Explorer",
+            root: root,
+            body: rendered_body
+        }
         )
         return;
     }
