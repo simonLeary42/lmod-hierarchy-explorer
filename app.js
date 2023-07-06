@@ -37,6 +37,7 @@ APP.get('*', (req, res) => {
         root = "https://" + req.get("host") + BASE_URI
         body_file_contents = read_file(relative_path("public/module-explorer.ejs"), "utf-8")
         rendered_body = ejs.render(body_file_contents, {
+            title: TITLE,
             JSONDATA: JSON.stringify(JSON_DATA),
             JSONDATA_HIDDEN: JSON.stringify(HIDDEN_JSON_DATA),
             root: root
