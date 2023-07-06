@@ -15,8 +15,8 @@ function read_file(_path, encoding) {
 }
 
 const APP = express()
-const JSON_DATA = read_file(relative_path("public/hierarchy.json"), "utf-8")
-const HIDDEN_JSON_DATA = read_file(relative_path("public/hidden-hierarchy.json"), "utf-8")
+const JSON_DATA = read_file(relative_path("make-json/hierarchy.json"), "utf-8")
+const HIDDEN_JSON_DATA = read_file(relative_path("make-json/hidden-hierarchy.json"), "utf-8")
 
 APP.set("view engine", "ejs")
 APP.get('*', (req, res) => {
