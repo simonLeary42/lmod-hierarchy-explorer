@@ -4,6 +4,7 @@ const path = require("path")
 const express = require("express")
 
 const BASE_URI = process.env.PASSENGER_BASE_URI
+const TITLE = "Unity Module Explorer"
 
 
 function relative_path(_path) {
@@ -41,7 +42,7 @@ APP.get('*', (req, res) => {
             root: root
         })
         res.render(relative_path("public/ood-header"), {
-            title: "Module Explorer",
+            title: TITLE,
             root: root,
             body: rendered_body
         })
