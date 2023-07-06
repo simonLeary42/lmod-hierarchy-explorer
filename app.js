@@ -31,7 +31,7 @@ APP.get('*', (req, res) => {
     modified_req = req.url.replace(BASE_URI, '');
     modified_req = path.join("public", modified_req);
     // a request for the BASE_URI is transformed above to be just `public`
-    const regex = /public(?:$|\\$|\/$)/; // `public` or `public/` or `public\`
+    const regex = /public[\/|\\]?$/; // `public` or `public/` or `public\`
     if (regex.test(modified_req)) {
         body_file_contents = read_file(relative_path("public/module-explorer.ejs"), "utf-8");
         rendered_body = ejs.render(body_file_contents, {
