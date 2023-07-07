@@ -1,6 +1,5 @@
 node_modules
 tmp
-public/hierarchy.json
-public/hidden-hierarchy.json
+
 make-json/hierarchy.json
 make-json/hidden-hierarchy.json
