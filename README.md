@@ -18,4 +18,4 @@ cd make-json && ./make-json.sh
 
 See example-output.tar.gz for results
 
-![image](https://github.com/simonleary-umass-edu/lmod-hierarchy-explorer/assets/71396965/40689a39-0a01-4cfd-90aa-3ba648abd3c4)
+![image](https://github.com/simonleary-umass-edu/lmod-hierarchy-explorer/assets/71396965/cbd4aa72-afdb-491e-ab56-5f870bb9e630)
