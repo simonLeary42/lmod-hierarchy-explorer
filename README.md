@@ -11,7 +11,7 @@ install:
 ```
 cd /var/www/ood/apps/sys/
 mkdir modules && cd modules
-git clone --recurse-submodules https://github.com/simonleary-umass-edu/lmod-hierarchy-explorer.git .
+git clone https://github.com/simonleary-umass-edu/lmod-hierarchy-explorer.git .
 npm install --prefix $PWD fs ejs json express
 cd make-json && ./make-json.sh
 ```
