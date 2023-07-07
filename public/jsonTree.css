@@ -1,1 +1,110 @@
-../jsonTreeViewer/libs/jsonTree/jsonTree.css
+/*
+ * JSON Tree Viewer
+ * http://github.com/summerstyle/jsonTreeViewer
+ *
+ * Copyright 2017 Vera Lobacheva (http://iamvera.com)
+ * Released under the MIT license (LICENSE.txt)
+ */
+/* Background for the tree. May use for <body> element */
+.jsontree_bg {
+    background: #FFF;
+}
+/* Styles for the container of the tree (e.g. fonts, margins etc.) */
+.jsontree_tree {
+    margin-left: 0px;
+    font-family: 'PT Mono', monospace;
+    font-size: 14px;
+    line-height: 2;
+}
+/* Styles for a list of child nodes */
+.jsontree_child-nodes {
+    display: none;
+    margin-bottom: 5px;
+    margin-left: 15px; /* this covers up expand button position left: -15px*/
+}
+.jsontree_node_expanded>.jsontree_value-wrapper>.jsontree_value>.jsontree_child-nodes {
+    display: block;
+}
+/* column grid: */
+.jsontree_node_expanded>.jsontree_value-wrapper>.jsontree_value>.jsontree_child-nodes.jsontree_leaf-nodes {
+    -moz-column-count: auto;
+    -webkit-column-count: auto;
+    column-count: auto;
+    -moz-column-width: 150px;
+    -webkit-column-width: 150px;
+    column-width: 180px; /* this is totally specific to the data that I'm displaying*/
+}
+.jsontree_node_expanded>.jsontree_value-wrapper>.jsontree_value>.jsontree_child-nodes.jsontree_leaf-nodes {
+    list-style: circle;
+}
+.jsontree_node_expanded>.jsontree_value-wrapper>.jsontree_value>.jsontree_child-nodes.jsontree_leaf-nodes>.jsontree_node {
+    margin-right: 10px; /* don't come too close to the bullet point on your right side */
+}
+/* Styles for labels */
+.jsontree_label-wrapper {
+    float: left;
+    margin-right: 8px;
+}
+.jsontree_label {
+    font-weight: normal;
+    vertical-align: top;
+    color: #000;
+    position: relative;
+    padding: 1px;
+    border-radius: 4px;
+    cursor: default;
+}
+.jsontree_node_marked>.jsontree_label-wrapper>.jsontree_label {
+    background: #fff2aa;
+}
+/* Styles for values */
+.jsontree_value-wrapper {
+    display: block;
+    overflow-wrap: anywhere;
+}
+.jsontree_node_complex>.jsontree_value-wrapper {
+    overflow: inherit;
+}
+.jsontree_value {
+    vertical-align: top;
+    display: inline;
+    color: #000;
+}
+/* Styles for active elements */
+.jsontree_expand-button {
+    position: absolute;
+    top: 3px;
+    left: -15px;
+    display: block;
+    width: 11px;
+    height: 11px;
+    background-image: url('icons.svg');
+}
+.jsontree_node_expanded>.jsontree_label-wrapper>.jsontree_label>.jsontree_expand-button {
+    background-position: 0 -11px;
+}
+.jsontree_show-more {
+    cursor: pointer;
+}
+.jsontree_node_expanded>.jsontree_value-wrapper>.jsontree_value>.jsontree_show-more {
+    display: none;
+}
+.jsontree_node_empty>.jsontree_label-wrapper>.jsontree_label>.jsontree_expand-button,
+.jsontree_node_empty>.jsontree_value-wrapper>.jsontree_value>.jsontree_show-more {
+    display: none !important;
+}
+.jsontree_node_complex>.jsontree_label-wrapper>.jsontree_label {
+    cursor: pointer;
+}
+.jsontree_node_empty>.jsontree_label-wrapper>.jsontree_label {
+    cursor: default !important;
+}
+ul {
+    list-style-type: none;
+}
+ul.jsontree_tree {
+    padding-inline-start: 0px;
+}
+ul.jsontree_child-nodes {
+    padding-inline-start: 0px;
+}
