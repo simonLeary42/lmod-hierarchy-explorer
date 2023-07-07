@@ -11,7 +11,7 @@ arches=("x86_64" "ppc64le" "aarch64")
 runspider() {
     /usr/share/lmod/lmod/libexec/spider -o spider-json $MODULEPATH | \
         sed ':a;N;$!ba;s/\n//g; s/[]][[]/,/g' | \
-        python -mjson.tool | \
+        python3 -mjson.tool | \
         sed "s|$spack_root/share/spack/lmod/|/modules/spack_modulefiles/|g"
 }
 
