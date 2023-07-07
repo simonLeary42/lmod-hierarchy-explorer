@@ -43,7 +43,6 @@ APP.get('*', (req, res) => {
         })
         res.render(relative_path("public/ood-template"), {
             title: TITLE,
-            branding_css_file: root + "/ood-template.css",
             body: rendered_body
         })
         return
