@@ -7,6 +7,14 @@ It also adds folding/unfolding of branches, searching, and a toggle switch for w
 
 A cron job should be set up to update the hierarchy json files.
 
+install:
+```
+cd /var/www/ood/apps/sys/
+mkdir modules && cd modules
+git clone --recurse-submodules https://github.com/simonleary-umass-edu/lmod-hierarchy-explorer.git .
+npm install --prefix $PWD fs ejs json express
+```
+
 See example-output.tar.gz for results
 
 ![image](https://github.com/simonleary-umass-edu/lmod-hierarchy-explorer/assets/71396965/40689a39-0a01-4cfd-90aa-3ba648abd3c4)
