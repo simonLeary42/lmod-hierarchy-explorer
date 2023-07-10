@@ -20,19 +20,18 @@ const HIDDEN_JSON_DATA = read_file(relative_path("make-json/hidden-hierarchy.jso
 
 APP.set("view engine", "ejs")
 APP.get('*', (req, res) => {
-    if (!req.url.includes(BASE_URI)) {
+    normal_req_url = path.normalize(req.url) // no "../../../../" shenanigans
+    if (!normal_req_url.startsWith(BASE_URI)) {
         err_msg = `\
-            invalid request "${req.url}"\n\
-            request should contain "${BASE_URI}"\
+            invalid request "${normal_req_url}"\n\
+            request should start with "${BASE_URI}"\
         `
-        res.status(404).send(err_msg)
+        res.status(403).send(err_msg)
     }
-    // "<%- root %>/index.html" -> "ood.unity.rc.umass.edu/pun/dev/modules4/public/index.html"
-    modified_req = req.url.replace(BASE_URI, '')
-    modified_req = path.join("public", modified_req)
-    // a request for the BASE_URI is transformed above to be just `public`
-    const regex = /public[\/|\\]?$/ // `public` or `public/` or `public\`
-    if (regex.test(modified_req)) {
+    // BASE_URI/file -> BASE_URI/public/file
+    modified_req = normal_req_url.slice(BASE_URI.length)
+    modified_req = path.join(BASE_URI, "public", modified_req)
+    if (modified_req == path.join(BASE_URI, "public")) { // default request
         root = "https://" + req.get("host") + BASE_URI
         body_file_contents = read_file(relative_path("public/module-explorer.ejs"), "utf-8")
         rendered_body = ejs.render(body_file_contents, {
