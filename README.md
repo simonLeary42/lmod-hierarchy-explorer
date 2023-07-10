@@ -15,6 +15,7 @@ git clone https://github.com/simonleary-umass-edu/lmod-hierarchy-explorer.git .
 npm install --prefix $PWD fs ejs json express
 cd make-json && ./make-json.sh
 ```
+you also have to [add the app to your OOD dashboard layout](https://osc.github.io/ood-documentation/release-2.0/customization.html#control-which-apps-appear-in-the-dashboard-navbar)
 
 See example-output.tar.gz for results
 
