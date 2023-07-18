@@ -30,9 +30,9 @@
     -moz-column-count: auto;
     -webkit-column-count: auto;
     column-count: auto;
-    -moz-column-width: 150px;
-    -webkit-column-width: 150px;
-    column-width: 180px; /* this is totally specific to the data that I'm displaying*/
+    -moz-column-width: 250px;
+    -webkit-column-width: 250px;
+    column-width: 250px; /* this is totally specific to the data that I'm displaying*/
 }
 .jsontree_node_expanded>.jsontree_value-wrapper>.jsontree_value>.jsontree_child-nodes.jsontree_leaf-nodes {
     list-style: circle;
