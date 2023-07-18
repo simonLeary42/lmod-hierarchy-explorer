@@ -117,6 +117,7 @@
         const search_input = document.getElementById("search_input").value
         if (search_input == ""){
             window.location.reload()
+            return
         }
         sessionStorage.setItem("search_query", search_input)
         window.location.reload()
