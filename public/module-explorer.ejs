@@ -52,9 +52,8 @@
             for (var parent_dir in json_obj[architecture]) {
                 for (var i = 0; i < json_obj[architecture][parent_dir].length; i++) {
                     name_version = json_obj[architecture][parent_dir][i]
-                    name_version = name_version.replace(/^<strong>/i, '')
-                    name_version = name_version.replace(/<\/strong>/i, '')
-                    if (name_version.toLowerCase().indexOf(substring.toLowerCase()) !== -1) {
+                    no_html_name_version = name_version.replace(/^<strong>/i, '').replace(/<\/strong>/i, '')
+                    if (no_html_name_version.toLowerCase().indexOf(substring.toLowerCase()) !== -1) {
                         nested_dict_append(filtered_obj, architecture, parent_dir, name_version)
                     }
                 }
