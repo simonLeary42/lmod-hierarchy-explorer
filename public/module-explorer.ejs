@@ -116,7 +116,7 @@
         event.preventDefault() // Prevent form submission
         const search_input = document.getElementById("search_input").value
         if (search_input == ""){
-            return
+            window.location.reload()
         }
         sessionStorage.setItem("search_query", search_input)
         window.location.reload()
