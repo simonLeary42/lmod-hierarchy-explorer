@@ -11,7 +11,7 @@ function relative_path(_path) {
 }
 
 function read_file(_path, encoding) {
-    return fs.readFileSync(_path, encoding, flag = 'r')
+    return fs.readFileSync(_path, encoding, { flag: 'r' })
 }
 
 function get_last_modified_date(_path) {
@@ -26,21 +26,21 @@ const JSON_LAST_MODIFIED_DATE = get_last_modified_date(relative_path("make-json/
 
 APP.set("view engine", "ejs")
 APP.get('*', (req, res) => {
-    normal_req_url = path.normalize(req.url) // no "../../../../" shenanigans
+    const normal_req_url = path.normalize(req.url) // no "../../../../" shenanigans
     if (!normal_req_url.startsWith(BASE_URI)) {
-        err_msg = `\
+        const err_msg = `\
             invalid request "${normal_req_url}"\n\
             request should start with "${BASE_URI}"\
         `
         res.status(403).send(err_msg)
+        return
     }
     // BASE_URI/file -> BASE_URI/public/file
-    modified_req = normal_req_url.slice(BASE_URI.length)
-    modified_req = path.join(BASE_URI, "public", modified_req)
+    const modified_req = path.join(BASE_URI, "public", normal_req_url.slice(BASE_URI.length))
     if (modified_req == path.join(BASE_URI, "public")) { // default request
-        root = "https://" + req.get("host") + BASE_URI
-        body_file_contents = read_file(relative_path("public/module-explorer.ejs"), "utf-8")
-        rendered_body = ejs.render(body_file_contents, {
+        const root = "https://" + req.get("host") + BASE_URI
+        const body_file_contents = read_file(relative_path("public/module-explorer.ejs"), "utf-8")
+        const rendered_body = ejs.render(body_file_contents, {
             title: TITLE,
             JSONDATA: JSON.stringify(JSON_DATA),
             JSONDATA_HIDDEN: JSON.stringify(HIDDEN_JSON_DATA),
@@ -53,9 +53,9 @@ APP.get('*', (req, res) => {
         })
         return
     }
-    request_path = relative_path(modified_req)
+    const request_path = relative_path(modified_req)
     try {
-        content = read_file(request_path)
+        const content = read_file(request_path)
         res.send(content)
     } catch {
         res.status(404).send(`failed to read file "${request_path}"`)
