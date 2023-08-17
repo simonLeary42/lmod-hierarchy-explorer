@@ -14,9 +14,15 @@ function read_file(_path, encoding) {
     return fs.readFileSync(_path, encoding, flag = 'r')
 }
 
+function get_last_modified_date(_path) {
+    const stats = fs.statSync(_path)
+    return stats.mtime
+}
+
 const APP = express()
 const JSON_DATA = read_file(relative_path("make-json/hierarchy.json"), "utf-8")
 const HIDDEN_JSON_DATA = read_file(relative_path("make-json/hidden-hierarchy.json"), "utf-8")
+const JSON_LAST_MODIFIED_DATE = get_last_modified_date(relative_path("make-json/hierarchy.json"))
 
 APP.set("view engine", "ejs")
 APP.get('*', (req, res) => {
@@ -38,7 +44,8 @@ APP.get('*', (req, res) => {
             title: TITLE,
             JSONDATA: JSON.stringify(JSON_DATA),
             JSONDATA_HIDDEN: JSON.stringify(HIDDEN_JSON_DATA),
-            root: root
+            root: root,
+            lastModifiedDate: JSON_LAST_MODIFIED_DATE
         })
         res.render(relative_path("public/ood-template"), {
             title: TITLE,
