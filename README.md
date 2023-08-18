@@ -1,5 +1,5 @@
 # lmod-hierarchy-explorer
-This is a nodejs app meant to be run from Open OnDemand.
+This is a nodejs app meant (but not required) to be run from Open OnDemand.
 
 It provides an interface similar to `module avail`, but on the whole hierarchy.
 
