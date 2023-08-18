@@ -4,7 +4,7 @@ const path = require("path")
 const express = require("express")
 
 const BASE_URI = process.env.PASSENGER_BASE_URI
-const TITLE = "Unity Module Explorer"
+const TITLE = "Module Explorer"
 
 function relative_path(_path) {
     return path.join(__dirname, _path)

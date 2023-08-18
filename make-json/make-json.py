@@ -5,34 +5,16 @@ import subprocess
 
 LMOD_SPIDER = "/usr/share/lmod/lmod/libexec/spider"
 
-# ARCH2MODULEPATH = {
-#     "noarch": "/opt/modulefiles/noarch/Core",
-#     "x86_64": "/opt/modulefiles/x86_64/Core",
-#     "aarch64": "/opt/modulefiles/aarch64/Core",
-#     "ppc64le": "/opt/modulefiles/ppc64le/Core"
-# }
-
 ARCH2MODULEPATH = {
-    "noarch": "/modules/modulefiles/noarch"
+    "noarch": "/opt/modulefiles/noarch/Core",
+    "x86_64": "/opt/modulefiles/x86_64/Core",
+    "aarch64": "/opt/modulefiles/aarch64/Core",
+    "ppc64le": "/opt/modulefiles/ppc64le/Core"
 }
-SPACK_ARCHES = ["x86_64", "aarch64", "ppc64le"]
-os = "linux-ubuntu20.04"
-for arch in SPACK_ARCHES:
-    ARCH2MODULEPATH[arch] = f"/modules/modulefiles/{arch}:/modules/spack_modulefiles/{os}-{arch}/Core"
 
 # when a hidden module adds a new branch to the hierarchy,
 # Lmod spider does not give the hidden property to the modules in that new branch
-HIDDEN_PARENT_DIRS = [
-    "/modules/spack/legacy-microarch/share/spack/modules/linux-ubuntu20.04-cascadelake",
-    "/modules/spack/legacy-microarch/share/spack/modules/linux-ubuntu20.04-haswell",
-    "/modules/spack/legacy-microarch/share/spack/modules/linux-ubuntu20.04-icelake",
-    "/modules/spack/legacy-microarch/share/spack/modules/linux-ubuntu20.04-skylake_avx512",
-    "/modules/spack/legacy-microarch/share/spack/modules/linux-ubuntu20.04-x86_64",
-    "/modules/spack/legacy-microarch/share/spack/modules/linux-ubuntu20.04-zen",
-    "/modules/spack/legacy-microarch/share/spack/modules/linux-ubuntu20.04-zen2",
-    "/modules/uri_modulefiles/all",
-    "/modules/uri_modulefiles"
-]
+HIDDEN_PARENT_DIRS = []
 
 VERSION_BLACKLIST = [
     "latest",
