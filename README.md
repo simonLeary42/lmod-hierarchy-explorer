@@ -1,8 +1,6 @@
 # lmod-hierarchy-explorer
 This is a nodejs app meant to be run from Open OnDemand.
 
-A python script runs the Lmod spider, then builds a json file which is opened by nodejs and rendered with a customized version of http://github.com/summerstyle/jsonTreeViewer
-
 It provides an interface similar to `module avail`, but on the whole hierarchy.
 
 It also adds folding/unfolding of branches, searching, and a toggle switch for whether or not to display hidden modules.
@@ -10,6 +8,8 @@ It also adds folding/unfolding of branches, searching, and a toggle switch for w
 A cron job should be set up to update the hierarchy json files.
 
 ![image](https://github.com/simonleary-umass-edu/lmod-hierarchy-explorer/assets/71396965/cbd4aa72-afdb-491e-ab56-5f870bb9e630)
+
+A python script runs the Lmod spider, then builds a json file which is opened by nodejs and rendered with a customized version of http://github.com/summerstyle/jsonTreeViewer
 
 ## disclaimer
 I have no experience with nodeJS. The interesting part of this project lies in `make-json/` and `public/module-explorer.js`
