@@ -7,7 +7,12 @@ It also adds folding/unfolding of branches, searching, and a toggle switch for w
 
 A cron job should be set up to update the hierarchy json files.
 
-install:
+## disclaimer
+I have no experience with nodeJS. The interesting part of this project lies in `make-json/` and `public/module-explorer.js`
+
+The normal way of statically serving files would not work for me, so I hacked this together. In Open OnDemand, the web server is run **as the user**, so I am not worried about the user taking control.
+
+## install
 ```
 cd /var/www/ood/apps/sys/
 mkdir modules && cd modules
