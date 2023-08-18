@@ -20,9 +20,6 @@ function get_last_modified_date(_path) {
 }
 
 const APP = express()
-const JSON_DATA = read_file(relative_path("make-json/hierarchy.json"), "utf-8")
-const HIDDEN_JSON_DATA = read_file(relative_path("make-json/hidden-hierarchy.json"), "utf-8")
-const JSON_LAST_MODIFIED_DATE = get_last_modified_date(relative_path("make-json/hierarchy.json"))
 
 APP.set("view engine", "ejs")
 APP.get('*', (req, res) => {
@@ -38,6 +35,9 @@ APP.get('*', (req, res) => {
     // BASE_URI/file -> BASE_URI/public/file
     const modified_req = path.join(BASE_URI, "public", normal_req_url.slice(BASE_URI.length))
     if (modified_req == path.join(BASE_URI, "public")) { // default request
+        const JSON_DATA = read_file(relative_path("make-json/hierarchy.json"), "utf-8")
+        const HIDDEN_JSON_DATA = read_file(relative_path("make-json/hidden-hierarchy.json"), "utf-8")
+        const JSON_LAST_MODIFIED_DATE = get_last_modified_date(relative_path("make-json/hierarchy.json"))
         const root = "https://" + req.get("host") + BASE_URI
         const body_file_contents = read_file(relative_path("public/module-explorer.ejs"), "utf-8")
         const rendered_body = ejs.render(body_file_contents, {
