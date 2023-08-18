@@ -7,6 +7,8 @@ It also adds folding/unfolding of branches, searching, and a toggle switch for w
 
 A cron job should be set up to update the hierarchy json files.
 
+![image](https://github.com/simonleary-umass-edu/lmod-hierarchy-explorer/assets/71396965/cbd4aa72-afdb-491e-ab56-5f870bb9e630)
+
 ## disclaimer
 I have no experience with nodeJS. The interesting part of this project lies in `make-json/` and `public/module-explorer.js`
 
@@ -37,5 +39,3 @@ cd make-json && ./make-json.py
 you also have to [add the app to your OOD dashboard layout](https://osc.github.io/ood-documentation/release-2.0/customization.html#control-which-apps-appear-in-the-dashboard-navbar), but after version 3.0 this won't be necessary
 
 See example-output.tar.gz for results
-
-![image](https://github.com/simonleary-umass-edu/lmod-hierarchy-explorer/assets/71396965/cbd4aa72-afdb-491e-ab56-5f870bb9e630)
