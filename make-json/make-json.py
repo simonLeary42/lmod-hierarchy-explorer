@@ -56,7 +56,11 @@ for arch, modulepath in ARCH2MODULEPATH.items():
     for module_name, modulefile2module_info in module_name2modulefile.items():
         for modulefile, modulefile_info in modulefile2module_info.items():
             parent_dir = modulefile_info["mpath"]
-            [name, version] = modulefile_info["fullName"].rsplit('/', 1)
+            if '/' in modulefile_info["fullName"]:
+                [name, version] = modulefile_info["fullName"].rsplit('/', 1)
+            else:
+                name = modulefile_info["fullName"]
+                version = "0.0"
             if version in VERSION_BLACKLIST:
                 continue
             name_version = f"<strong>{name}</strong>/{version}"
