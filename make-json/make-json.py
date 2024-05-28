@@ -46,6 +46,8 @@ for arch, modulepath in ARCH2MODULEPATH.items():
     print(cmd)
     json_str = subprocess.check_output(cmd)
     module_name2modulefile = json.loads(json_str)
+    if module_name2modulefile == []: # no modules
+        continue
     for module_name, modulefile2module_info in module_name2modulefile.items():
         for modulefile, modulefile_info in modulefile2module_info.items():
             parent_dir = modulefile_info["mpath"]
