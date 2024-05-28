@@ -22,13 +22,6 @@ for arch in SPACK_ARCHES:
 # when a hidden module adds a new branch to the hierarchy,
 # Lmod spider does not give the hidden property to the modules in that new branch
 HIDDEN_PARENT_DIRS = [
-    "/modules/spack/legacy-microarch/share/spack/modules/linux-ubuntu20.04-cascadelake",
-    "/modules/spack/legacy-microarch/share/spack/modules/linux-ubuntu20.04-haswell",
-    "/modules/spack/legacy-microarch/share/spack/modules/linux-ubuntu20.04-icelake",
-    "/modules/spack/legacy-microarch/share/spack/modules/linux-ubuntu20.04-skylake_avx512",
-    "/modules/spack/legacy-microarch/share/spack/modules/linux-ubuntu20.04-x86_64",
-    "/modules/spack/legacy-microarch/share/spack/modules/linux-ubuntu20.04-zen",
-    "/modules/spack/legacy-microarch/share/spack/modules/linux-ubuntu20.04-zen2",
     "/modules/uri_modulefiles/all",
     "/modules/uri_modulefiles"
 ]
