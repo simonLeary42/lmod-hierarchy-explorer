@@ -33,29 +33,16 @@ APP.get("*", (req, res) => {
     return;
   }
   // BASE_URI/file -> BASE_URI/public/file
-  const modified_req = path.join(
-    BASE_URI,
-    "public",
-    normal_req_url.slice(BASE_URI.length)
-  );
+  const modified_req = path.join(BASE_URI, "public", normal_req_url.slice(BASE_URI.length));
   if (modified_req == path.join(BASE_URI, "public")) {
     // default request
-    const JSON_DATA = read_file(
-      relative_path("make-json/hierarchy.json"),
-      "utf-8"
-    );
-    const HIDDEN_JSON_DATA = read_file(
-      relative_path("make-json/hidden-hierarchy.json"),
-      "utf-8"
-    );
+    const JSON_DATA = read_file(relative_path("make-json/hierarchy.json"), "utf-8");
+    const HIDDEN_JSON_DATA = read_file(relative_path("make-json/hidden-hierarchy.json"), "utf-8");
     const JSON_LAST_MODIFIED_DATE = get_last_modified_date(
       relative_path("make-json/hierarchy.json")
     );
     const root = "https://" + req.get("host") + BASE_URI;
-    const body_file_contents = read_file(
-      relative_path("public/module-explorer.ejs"),
-      "utf-8"
-    );
+    const body_file_contents = read_file(relative_path("public/module-explorer.ejs"), "utf-8");
     const rendered_body = ejs.render(body_file_contents, {
       title: TITLE,
       JSONDATA: JSON.stringify(JSON_DATA),

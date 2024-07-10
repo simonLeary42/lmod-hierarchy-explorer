@@ -283,9 +283,7 @@ var jsonTree = (function () {
       if (this.parent.type === "array") {
         currentPath = "[" + this.label + "]";
       } else {
-        currentPath = isInDotNotation
-          ? "." + this.label
-          : "['" + this.label + "']";
+        currentPath = isInDotNotation ? "." + this.label : "['" + this.label + "']";
       }
       return this.parent.getJSONPath(isInDotNotation) + currentPath;
     },
