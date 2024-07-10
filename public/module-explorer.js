@@ -4,9 +4,11 @@ function is_key_in_session_storage(key) {
     sessionStorage.getItem(key) !== null
   );
 }
+
 function is_object_empty(object) {
   return Object.keys(object).length === 0;
 }
+
 function nested_dict_append(_dict, key1, key2, value) {
   if (!_dict.hasOwnProperty(key1)) {
     _dict[key1] = {};
@@ -16,6 +18,7 @@ function nested_dict_append(_dict, key1, key2, value) {
   }
   _dict[key1][key2].push(value);
 }
+
 function filter_json_by_substring(json_obj, substring) {
   var filtered_obj = {};
   for (var architecture in json_obj) {
@@ -71,6 +74,7 @@ if (is_key_in_session_storage("search_query")) {
     sessionStorage.setItem("do_show_hidden", true);
   }
 }
+
 var wrapper = document.getElementById("json-tree-wrapper");
 var tree = jsonTree.create(json_data, wrapper);
 var wrapper_hidden = document.getElementById("json-tree-wrapper-hidden");
@@ -85,6 +89,7 @@ expand_collapse_box.addEventListener("change", function () {
     tree_hidden.collapse();
   }
 });
+
 show_hidden_box.addEventListener("change", function () {
   hidden_modules_wrapper = document.getElementById("json-tree-wrapper-hidden");
   hidden_modules_wrapper.classList.toggle("display_none");
@@ -94,6 +99,7 @@ show_hidden_box.addEventListener("change", function () {
     sessionStorage.setItem("do_show_hidden", false);
   }
 });
+
 document
   .getElementById("search_box")
   .addEventListener("submit", function (event) {
