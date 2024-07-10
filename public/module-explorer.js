@@ -19,12 +19,12 @@ function nested_dict_append(_dict, key1, key2, value) {
   _dict[key1][key2].push(value);
 }
 
-function filter_json_by_substring(json_obj, substring) {
+function filter_tree_by_substring(tree, substring) {
   var filtered_obj = {};
-  for (var architecture in json_obj) {
-    for (var parent_dir in json_obj[architecture]) {
-      for (var i = 0; i < json_obj[architecture][parent_dir].length; i++) {
-        name_version = json_obj[architecture][parent_dir][i];
+  for (var architecture in tree) {
+    for (var parent_dir in tree[architecture]) {
+      for (var i = 0; i < tree[architecture][parent_dir].length; i++) {
+        name_version = tree[architecture][parent_dir][i];
         no_html_name_version = name_version
           .replace(/^<strong>/i, "")
           .replace(/<\/strong>/i, "");
@@ -58,8 +58,8 @@ if (is_key_in_session_storage("search_query")) {
   do_expand_all = true;
   search_query = sessionStorage.getItem("search_query");
   sessionStorage.setItem("search_query", null);
-  json_data = filter_json_by_substring(json_data_orig, search_query);
-  json_data_hidden = filter_json_by_substring(
+  json_data = filter_tree_by_substring(json_data_orig, search_query);
+  json_data_hidden = filter_tree_by_substring(
     json_data_orig_hidden,
     search_query
   );
