@@ -54,7 +54,7 @@ for arch, modulepath in ARCH2MODULEPATH.items():
                 version = "0.0"
             if version in VERSION_BLACKLIST:
                 continue
-            name_version = f"<strong>{name}</strong>/{version}"
+            name_version = f"{name}{version}"
             if modulefile_info["hidden"]:
                 nested_dict_append(hidden_modules, arch, parent_dir, name_version)
             else:

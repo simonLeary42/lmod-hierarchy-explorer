@@ -22,14 +22,27 @@ function filter_tree_by_substring(tree, substring) {
     for (var parent_dir in tree[architecture]) {
       for (var i = 0; i < tree[architecture][parent_dir].length; i++) {
         name_version = tree[architecture][parent_dir][i];
-        no_html_name_version = name_version.replace(/^<strong>/i, "").replace(/<\/strong>/i, "");
-        if (no_html_name_version.toLowerCase().indexOf(substring.toLowerCase()) !== -1) {
+        if (name_version.toLowerCase().indexOf(substring.toLowerCase()) !== -1) {
           nested_dict_append(filtered_obj, architecture, parent_dir, name_version);
         }
       }
     }
   }
   return filtered_obj;
+}
+
+function make_names_strong(tree) {
+  var output = {};
+  for (var architecture in tree) {
+    for (var parent_dir in tree[architecture]) {
+      for (var i = 0; i < tree[architecture][parent_dir].length; i++) {
+        name_version = tree[architecture][parent_dir][i];
+        strong_name_version = name_version.replace(/^([^\/]+)\/(.*)/, "<strong>$1</strong>/$2");
+        nested_dict_append(output, architecture, parent_dir, strong_name_version);
+      }
+    }
+  }
+  return output;
 }
 
 const expand_collapse_box = document.getElementById("expand_collapse_all");
@@ -44,8 +57,10 @@ if (is_key_in_session_storage("search_query")) {
   do_expand_all = true;
   search_query = sessionStorage.getItem("search_query");
   sessionStorage.setItem("search_query", null);
-  json_data = filter_tree_by_substring(json_data_orig, search_query);
-  json_data_hidden = filter_tree_by_substring(json_data_orig_hidden, search_query);
+  json_data = make_names_strong(filter_tree_by_substring(json_data_orig, search_query));
+  json_data_hidden = make_names_strong(
+    filter_tree_by_substring(json_data_orig_hidden, search_query)
+  );
   if (is_object_empty(json_data) && is_object_empty(json_data_hidden)) {
     alert("no modules found.");
     sessionStorage.setItem("search_query", null);
@@ -59,9 +74,9 @@ if (is_key_in_session_storage("search_query")) {
 }
 
 var wrapper = document.getElementById("json-tree-wrapper");
-var tree = jsonTree.create(json_data, wrapper);
+var tree = jsonTree.create(make_names_strong(json_data), wrapper);
 var wrapper_hidden = document.getElementById("json-tree-wrapper-hidden");
-var tree_hidden = jsonTree.create(json_data_hidden, wrapper_hidden);
+var tree_hidden = jsonTree.create(make_names_strong(json_data_hidden), wrapper_hidden);
 
 expand_collapse_box.addEventListener("change", function () {
   if (!!this.checked) {
