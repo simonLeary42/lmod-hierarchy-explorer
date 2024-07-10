@@ -11,25 +11,20 @@ LMOD_SPIDER = "/usr/share/lmod/lmod/libexec/spider"
 #     "ppc64le": "/opt/modulefiles/ppc64le/Core"
 # }
 
-ARCH2MODULEPATH = {
-    "noarch": "/modules/modulefiles/noarch"
-}
+ARCH2MODULEPATH = {"noarch": "/modules/modulefiles/noarch"}
 SPACK_ARCHES = ["x86_64", "aarch64", "ppc64le"]
 os = "linux-ubuntu20.04"
 for arch in SPACK_ARCHES:
-    ARCH2MODULEPATH[arch] = f"/modules/modulefiles/{arch}:/modules/spack_modulefiles/{os}-{arch}/Core"
+    ARCH2MODULEPATH[arch] = (
+        f"/modules/modulefiles/{arch}:/modules/spack_modulefiles/{os}-{arch}/Core"
+    )
 
 # when a hidden module adds a new branch to the hierarchy,
 # Lmod spider does not give the hidden property to the modules in that new branch
-HIDDEN_PARENT_DIRS = [
-    "/modules/uri_modulefiles/all",
-    "/modules/uri_modulefiles"
-]
+HIDDEN_PARENT_DIRS = ["/modules/uri_modulefiles/all", "/modules/uri_modulefiles"]
 
-VERSION_BLACKLIST = [
-    "latest",
-    "default"
-]
+VERSION_BLACKLIST = ["latest", "default"]
+
 
 def nested_dict_append(_dict, key1, key2, value):
     if key1 not in _dict.keys():
@@ -37,6 +32,7 @@ def nested_dict_append(_dict, key1, key2, value):
     if key2 not in _dict[key1].keys():
         _dict[key1][key2] = []
     _dict[key1][key2].append(value)
+
 
 # build the dicts
 modules = {}
@@ -46,13 +42,13 @@ for arch, modulepath in ARCH2MODULEPATH.items():
     print(cmd)
     json_str = subprocess.check_output(cmd)
     module_name2modulefile = json.loads(json_str)
-    if module_name2modulefile == []: # no modules
+    if module_name2modulefile == []:  # no modules
         continue
     for module_name, modulefile2module_info in module_name2modulefile.items():
         for modulefile, modulefile_info in modulefile2module_info.items():
             parent_dir = modulefile_info["mpath"]
-            if '/' in modulefile_info["fullName"]:
-                [name, version] = modulefile_info["fullName"].rsplit('/', 1)
+            if "/" in modulefile_info["fullName"]:
+                [name, version] = modulefile_info["fullName"].rsplit("/", 1)
             else:
                 name = modulefile_info["fullName"]
                 version = "0.0"
@@ -77,7 +73,7 @@ for _dir in HIDDEN_PARENT_DIRS:
     # purge empty dictionaries
     empty_arches = []
     for arch, parent_dir2name in modules.items():
-        if len(parent_dir2name.keys())==0:
+        if len(parent_dir2name.keys()) == 0:
             empty_arches.append(arch)
     for arch in empty_arches:
         modules.pop(arch)
@@ -90,17 +86,19 @@ for _dict in [modules, hidden_modules]:
 
     # put parent directories in order of how many modules they provide
     for arch, parent_dir2name in _dict.items():
-        _dict[arch] = dict(sorted(parent_dir2name.items(), key=lambda item: len(item[1]), reverse=True))
+        _dict[arch] = dict(
+            sorted(parent_dir2name.items(), key=lambda item: len(item[1]), reverse=True)
+        )
 
     # put modules in alphabetical order
     for arch, parent_dir2name in _dict.items():
         for parent_dir, names in parent_dir2name.items():
             _dict[arch][parent_dir] = sorted(names)
 
-with open("hierarchy.json", 'w', encoding="utf8") as json_out_file:
+with open("hierarchy.json", "w", encoding="utf8") as json_out_file:
     json.dump(modules, json_out_file)
 
-with open("hidden-hierarchy.json", 'w', encoding="utf8") as json_out_file:
+with open("hidden-hierarchy.json", "w", encoding="utf8") as json_out_file:
     json.dump(hidden_modules, json_out_file)
 
 print("hiearchy.json and hidden_hierarchy.json created in your current working directory.")
