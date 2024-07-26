@@ -38,6 +38,10 @@ APP.get("*", (req, res) => {
     // default request
     const JSON_DATA = read_file(relative_path("make-json/hierarchy.json"), "utf-8");
     const HIDDEN_JSON_DATA = read_file(relative_path("make-json/hidden-hierarchy.json"), "utf-8");
+    const DIRECTORY_PREREQS_DATA = read_file(
+      relative_path("make-json/directory-prereqs.json"),
+      "utf-8"
+    );
     const JSON_LAST_MODIFIED_DATE = get_last_modified_date(
       relative_path("make-json/hierarchy.json")
     );
@@ -61,6 +65,7 @@ APP.get("*", (req, res) => {
       title: TITLE,
       JSONDATA: JSON.stringify(JSON_DATA),
       JSONDATA_HIDDEN: JSON.stringify(HIDDEN_JSON_DATA),
+      DIRECTORY_PREREQS: JSON.stringify(DIRECTORY_PREREQS_DATA),
       root: root,
       lastModifiedDate: JSON_LAST_MODIFIED_DATE,
       custom_top: custom_top,

@@ -37,6 +37,7 @@ def nested_dict_append(_dict, key1, key2, value):
 # build the dicts
 modules = {}
 hidden_modules = {}
+directory_prereqs = {}
 for arch, modulepath in ARCH2MODULEPATH.items():
     cmd = [LMOD_SPIDER, "-o", "spider-json", modulepath]
     print(cmd)
@@ -47,6 +48,15 @@ for arch, modulepath in ARCH2MODULEPATH.items():
     for module_name, modulefile2module_info in module_name2modulefile.items():
         for modulefile, modulefile_info in modulefile2module_info.items():
             parent_dir = modulefile_info["mpath"]
+            if "parentAA" in modulefile_info:
+                # this is always a nested list but I don't know why
+                (prereqs,) = modulefile_info["parentAA"]
+                assert len(prereqs) > 0
+                if parent_dir in directory_prereqs:
+                    assert (
+                        directory_prereqs[parent_dir] == prereqs
+                    ), "no directory should have 2 different definitions for prerequisite modules!"
+                directory_prereqs[parent_dir] = prereqs
             if "/" in modulefile_info["fullName"]:
                 [name, version] = modulefile_info["fullName"].rsplit("/", 1)
             else:
@@ -54,7 +64,7 @@ for arch, modulepath in ARCH2MODULEPATH.items():
                 version = "0.0"
             if version in VERSION_BLACKLIST:
                 continue
-            name_version = f"{name}{version}"
+            name_version = f"{name}/{version}"
             if modulefile_info["hidden"]:
                 nested_dict_append(hidden_modules, arch, parent_dir, name_version)
             else:
@@ -101,4 +111,9 @@ with open("hierarchy.json", "w", encoding="utf8") as json_out_file:
 with open("hidden-hierarchy.json", "w", encoding="utf8") as json_out_file:
     json.dump(hidden_modules, json_out_file)
 
-print("hiearchy.json and hidden_hierarchy.json created in your current working directory.")
+with open("directory-prereqs.json", "w", encoding="utf8") as prereqs_file:
+    json.dump(directory_prereqs, prereqs_file)
+
+print(
+    "hiearchy.json, hidden_hierarchy.json, and directory-prereqs.json created in your current working directory."
+)
