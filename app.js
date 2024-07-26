@@ -23,7 +23,11 @@ const APP = express();
 
 APP.set("view engine", "ejs");
 APP.get("*", (req, res) => {
+  // this URL mangling is insecure / error prone - since this is a passenger app run as the user,
+  // I'm not worried about exposing files this way
   const normal_req_url = path.normalize(req.url); // no "../../../../" shenanigans
+
+  // strip BASE_URI from the beginning of request, or 403 error
   if (!normal_req_url.startsWith(BASE_URI)) {
     const err_msg = `\
             invalid request "${normal_req_url}"\n\
@@ -32,10 +36,17 @@ APP.get("*", (req, res) => {
     res.status(403).send(err_msg);
     return;
   }
-  // BASE_URI/file -> BASE_URI/public/file
-  const modified_req = path.join(BASE_URI, "public", normal_req_url.slice(BASE_URI.length));
-  if (modified_req == path.join(BASE_URI, "public")) {
-    // default request
+  const request_path = normal_req_url.slice(BASE_URI.length);
+
+  if (request_path != "") {
+    const absolute_path = relative_path(path.join(BASE_URI, "public", request_path));
+    try {
+      const content = read_file(absolute_path);
+      res.send(content);
+    } catch {
+      res.status(404).send(`failed to read file "${absolute_path}"`);
+    }
+  } else {
     const JSON_DATA = read_file(relative_path("make-json/hierarchy.json"));
     const HIDDEN_JSON_DATA = read_file(relative_path("make-json/hidden-hierarchy.json"));
     const DIRECTORY_PREREQS_DATA = read_file(relative_path("make-json/directory-prereqs.json"));
@@ -68,16 +79,9 @@ APP.get("*", (req, res) => {
       custom_top: custom_top,
       custom_bottom: custom_bottom,
     });
-    return;
-  }
-  const request_path = relative_path(modified_req);
-  try {
-    const content = read_file(request_path);
-    res.send(content);
-  } catch {
-    res.status(404).send(`failed to read file "${request_path}"`);
   }
 });
+
 APP.listen(3000, () => {
   console.log("server running on port 3000");
 });
