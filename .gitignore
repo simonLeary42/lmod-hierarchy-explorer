@@ -3,3 +3,4 @@ package-lock.json
 tmp
 make-json/hierarchy.json
 make-json/hidden-hierarchy.json
+make-json/directory-prereqs.json
