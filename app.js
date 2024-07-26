@@ -42,17 +42,29 @@ APP.get("*", (req, res) => {
       relative_path("make-json/hierarchy.json")
     );
     const root = "https://" + req.get("host") + BASE_URI;
-    const body_file_contents = read_file(relative_path("public/module-explorer.ejs"), "utf-8");
-    const rendered_body = ejs.render(body_file_contents, {
+    var custom_top = "";
+    try {
+      custom_top = read_file(relative_path("public/custom_top.html"), "utf-8");
+    } catch (e) {
+      if (e.code == "ENOENT") {
+      }
+    }
+    var custom_bottom = "";
+    try {
+      custom_bottom = read_file(relative_path("public/custom_bottom.html"), "utf-8");
+    } catch (e) {
+      if (e.code == "ENOENT") {
+      }
+    }
+    // const body_file_contents = read_file(relative_path("public/index.ejs"), "utf-8");
+    res.render(relative_path("public/index.ejs"), {
       title: TITLE,
       JSONDATA: JSON.stringify(JSON_DATA),
       JSONDATA_HIDDEN: JSON.stringify(HIDDEN_JSON_DATA),
       root: root,
       lastModifiedDate: JSON_LAST_MODIFIED_DATE,
-    });
-    res.render(relative_path("public/ood-template"), {
-      title: TITLE,
-      body: rendered_body,
+      custom_top: custom_top,
+      custom_bottom: custom_bottom,
     });
     return;
   }
