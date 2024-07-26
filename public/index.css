@@ -1,0 +1,27 @@
+.display_none * {
+  display: none;
+}
+
+.codeblock {
+  background-color: #2d2d2d;
+  border-radius: 5px;
+  padding: 15px;
+  color: #ffffff;
+  font-family: monospace;
+  display: inline-block; /* fit the width of the block to the size of the text inside */
+  max-width: 100%;
+  overflow-x: auto; /* horizontal scroll within code block - actually now it's doing word wrapping, but that's ok too */
+  font-size: 14px;
+  line-height: 14px; /* set line-height only so that I can set min-height to one line */
+  min-height: 14px;
+}
+
+.controlpanel tr button,
+.controlpanel tr input[type="text"] {
+  margin-top: 3px;
+  margin-bottom: 3px;
+}
+
+.controlpanel {
+  margin-bottom: 20px;
+}

@@ -12,7 +12,7 @@
 /* Styles for the container of the tree (e.g. fonts, margins etc.) */
 .jsontree_tree {
   margin-left: 0px;
-  font-family: "PT Mono", monospace;
+  /* font-family: "PT Mono", monospace; */
   font-size: 14px;
   line-height: 2;
 }
@@ -65,6 +65,9 @@
   cursor: default;
 }
 .jsontree_node_marked > .jsontree_label-wrapper > .jsontree_label {
+  background: #fff2aa;
+}
+.jsontree_node_marked > .jsontree_value-wrapper > .jsontree_value {
   background: #fff2aa;
 }
 /* Styles for values */
