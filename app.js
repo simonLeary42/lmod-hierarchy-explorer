@@ -10,7 +10,7 @@ function relative_path(_path) {
   return path.join(__dirname, _path);
 }
 
-function read_file(_path, encoding) {
+function read_file(_path, encoding = "utf-8") {
   return fs.readFileSync(_path, encoding, { flag: "r" });
 }
 
@@ -36,12 +36,9 @@ APP.get("*", (req, res) => {
   const modified_req = path.join(BASE_URI, "public", normal_req_url.slice(BASE_URI.length));
   if (modified_req == path.join(BASE_URI, "public")) {
     // default request
-    const JSON_DATA = read_file(relative_path("make-json/hierarchy.json"), "utf-8");
-    const HIDDEN_JSON_DATA = read_file(relative_path("make-json/hidden-hierarchy.json"), "utf-8");
-    const DIRECTORY_PREREQS_DATA = read_file(
-      relative_path("make-json/directory-prereqs.json"),
-      "utf-8"
-    );
+    const JSON_DATA = read_file(relative_path("make-json/hierarchy.json"));
+    const HIDDEN_JSON_DATA = read_file(relative_path("make-json/hidden-hierarchy.json"));
+    const DIRECTORY_PREREQS_DATA = read_file(relative_path("make-json/directory-prereqs.json"));
     const JSON_LAST_MODIFIED_DATE = get_last_modified_date(
       relative_path("make-json/hierarchy.json")
     );
