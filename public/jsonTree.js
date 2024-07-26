@@ -218,22 +218,10 @@ var jsonTree = (function () {
     self.el = el;
     if (label !== null) {
       labelEl = el.querySelector(".jsontree_label");
-      labelEl.addEventListener(
-        "click",
-        function (e) {
-          if (e.altKey) {
-            self.toggleMarked();
-            return;
-          }
-          if (e.shiftKey) {
-            document.getSelection().removeAllRanges();
-            alert(self.getJSONPath());
-            return;
-          }
-        },
-        false
-      );
+      labelEl.addEventListener("click", self.toggleMarked.bind(self), false);
     }
+    valueEl = el.querySelector(".jsontree_value");
+    valueEl.addEventListener("click", self.toggleMarked.bind(self), false);
   }
   _NodeSimple.prototype = {
     constructor: _NodeSimple,
@@ -435,29 +423,8 @@ var jsonTree = (function () {
     if (label !== null) {
       labelEl = el.querySelector(".jsontree_label");
       moreContentEl = el.querySelector(".jsontree_show-more");
-      labelEl.addEventListener(
-        "click",
-        function (e) {
-          if (e.altKey) {
-            self.toggleMarked();
-            return;
-          }
-          if (e.shiftKey) {
-            document.getSelection().removeAllRanges();
-            alert(self.getJSONPath());
-            return;
-          }
-          self.toggle(e.ctrlKey || e.metaKey);
-        },
-        false
-      );
-      moreContentEl.addEventListener(
-        "click",
-        function (e) {
-          self.toggle(e.ctrlKey || e.metaKey);
-        },
-        false
-      );
+      labelEl.addEventListener("click", self.toggle.bind(self), false);
+      moreContentEl.addEventListener("click", self.toggle.bind(self), false);
       self.isRoot = false;
     } else {
       self.isRoot = true;
