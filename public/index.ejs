@@ -2,8 +2,9 @@
 <html lang="en">
   <head>
     <title><%- title %></title>
-    <link href="<%- root %>/jsonTree.css" rel="stylesheet" />
-    <link href="<%- root %>/index.css" rel="stylesheet" />
+    <base href="<%- base %>" />
+    <link href="jsonTree.css" rel="stylesheet" />
+    <link href="index.css" rel="stylesheet" />
   </head>
   <body>
     <%- custom_top %>
@@ -54,7 +55,7 @@
       const json_data_orig_hidden = JSON.parse(<%- JSONDATA_HIDDEN %>)
       const directory_prereqs = JSON.parse(<%- DIRECTORY_PREREQS %>)
     </script>
-    <script src="<%- root %>/jsonTree.js"></script>
-    <script src="<%- root %>/index.js"></script>
+    <script src="jsonTree.js"></script>
+    <script src="index.js"></script>
   </body>
 </html>

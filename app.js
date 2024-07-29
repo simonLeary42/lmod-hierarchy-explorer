@@ -53,7 +53,6 @@ APP.get("*", (req, res) => {
     const JSON_LAST_MODIFIED_DATE = get_last_modified_date(
       relative_path("make-json/hierarchy.json")
     );
-    const root = "https://" + req.get("host") + BASE_URI;
     var custom_top = "";
     try {
       custom_top = read_file(relative_path("public/custom_top.html"), "utf-8");
@@ -74,7 +73,7 @@ APP.get("*", (req, res) => {
       JSONDATA: JSON.stringify(JSON_DATA),
       JSONDATA_HIDDEN: JSON.stringify(HIDDEN_JSON_DATA),
       DIRECTORY_PREREQS: JSON.stringify(DIRECTORY_PREREQS_DATA),
-      root: root,
+      base: `https://${path.join(req.get("host"), BASE_URI + "/")}`,
       lastModifiedDate: JSON_LAST_MODIFIED_DATE,
       custom_top: custom_top,
       custom_bottom: custom_bottom,
