@@ -3,6 +3,7 @@ const module_hidden_tree_wrapper = document.getElementById("json-tree-wrapper-hi
 const expand_collapse_box = document.getElementById("expand_collapse_all");
 const show_hidden_box = document.getElementById("show_hidden");
 const module_load_command_codeblock = document.getElementById("module_load_command");
+const module_load_command_output_codeblock = document.getElementById("module_load_command_output");
 const clear_selected_modules_button = document.getElementById("clear_selected_modules");
 const search_form = document.getElementById("search_form");
 const search_form_textbox = document.getElementById("search_form_textbox");
@@ -13,6 +14,9 @@ const search_form_textbox = document.getElementById("search_form_textbox");
 // const directory_prereqs = JSON.parse(<%- DIRECTORY_PREREQS %>);
 var tree = jsonTree.create({}, module_tree_wrapper);
 var tree_hidden = jsonTree.create({}, module_hidden_tree_wrapper);
+
+// used in update_command_output() to enforce a maximum of one running command
+var previous_abort_controller = null;
 
 // FUNCTIONS ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -101,33 +105,77 @@ function remove_duplicates_keep_first(x) {
   return output;
 }
 
-function update_module_load_command() {
-  marked_nodes = document.querySelectorAll(".jsontree_node_marked");
-  if (marked_nodes.length == 0) {
-    command = "(no modules selected)";
-  } else {
-    modules = [];
-    marked_nodes.forEach((marked_node) => {
-      // if this module directory has any prerequisite modules, add those modules to the command
-      _directory = marked_node.parentNode
-        .closest(".jsontree_node")
-        .querySelector(".jsontree_label-wrapper")
-        .querySelector(".jsontree_label").textContent;
-      if (_directory in directory_prereqs) {
-        directory_prereqs[_directory].forEach((prereq) => {
-          modules.push(prereq);
-        });
-      }
-      // .textContent automatically removes the <strong></strong>
-      modules.push(
-        marked_node.querySelector(".jsontree_value-wrapper").querySelector(".jsontree_value")
-          .textContent
-      );
-      modules = remove_duplicates_keep_first(modules);
-      command = ["module", "load"].concat(modules).join(" ");
-    });
+async function update_command_output(modules) {
+  if (previous_abort_controller) {
+    previous_abort_controller.abort();
   }
+  previous_abort_controller = new AbortController();
+  const { signal } = previous_abort_controller;
+
+  if (modules.length == 0) {
+    module_load_command_output_codeblock.textContent = "(no modules selected)";
+    return;
+  }
+  module_load_command_output_codeblock.textContent = "(command in progress...)";
+
+  // can't use slashes in a URL, and OOD doesn't like URL encoded slashes
+  // backend replaces '|' with '/'
+  const modules_no_slashes = modules.map((x) => {
+    return x.replace(/\//, "|");
+  });
+  // document.baseURI may end in a slash, but double slashes doesn't break the backend
+  const fetch_url = encodeURI(document.baseURI + "/module-load/" + modules_no_slashes.join("/"));
+  try {
+    const response = await fetch(fetch_url, { signal });
+    if (!response.ok) {
+      console.error(`bad fetch response: ${response}`);
+      module_load_command_output_codeblock.textContent = "(fetch error, See console)";
+      return;
+    }
+    const content = await response.text();
+    module_load_command_output_codeblock.textContent = content;
+  } catch (error) {
+    if (error.name === "AbortError") {
+      console.log(`fetch aborted: \"${fetch_url}\"`);
+    } else {
+      console.error(`fetch error: ${error}`);
+      module_load_command_output_codeblock.textContent = "(fetch error, See console)";
+    }
+  }
+}
+
+function update_command(modules) {
+  if (modules.length == 0) {
+    module_load_command_codeblock.textContent = "(no modules selected)";
+    return;
+  }
+  const command = ["module", "load"].concat(modules).join(" ");
   module_load_command_codeblock.textContent = command;
+}
+
+function update_command_and_output() {
+  marked_nodes = document.querySelectorAll(".jsontree_node_marked");
+  var modules = [];
+  marked_nodes.forEach((marked_node) => {
+    // if this module directory has any prerequisite modules, add those modules to the command
+    _directory = marked_node.parentNode
+      .closest(".jsontree_node")
+      .querySelector(".jsontree_label-wrapper")
+      .querySelector(".jsontree_label").textContent;
+    if (_directory in directory_prereqs) {
+      directory_prereqs[_directory].forEach((prereq) => {
+        modules.push(prereq);
+      });
+    }
+    // .textContent automatically removes the <strong></strong>
+    modules.push(
+      marked_node.querySelector(".jsontree_value-wrapper").querySelector(".jsontree_value")
+        .textContent
+    );
+  });
+  modules = remove_duplicates_keep_first(modules);
+  update_command(modules);
+  update_command_output(modules);
 }
 
 function clear_selected_modules() {
@@ -174,7 +222,7 @@ const observer = new MutationObserver((mutations) => {
       mutation.attributeName === "class" &&
       mutation.target.classList.contains("jsontree_node")
     ) {
-      update_module_load_command();
+      update_command_and_output();
     }
   });
 });
@@ -183,4 +231,4 @@ observer.observe(document.body, {
   subtree: true,
   attributes: true,
 });
-update_module_load_command();
+update_command_and_output();

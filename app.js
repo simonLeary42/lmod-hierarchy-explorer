@@ -1,7 +1,13 @@
+// this is a passenger app run with the user's own posix account
+// this nodejs backend will only ever have one frontend client at a time
+// so I want sync/blocking calls, and I don't care about security
+
 const fs = require("fs");
 const ejs = require("ejs");
 const path = require("path");
 const express = require("express");
+const { spawn } = require("child_process");
+const shellQuote = require("shell-quote");
 
 const BASE_URI = process.env.PASSENGER_BASE_URI;
 const TITLE = "Unity Module Explorer";
@@ -25,28 +31,22 @@ APP.set("view engine", "ejs");
 APP.get("*", (req, res) => {
   // this URL mangling is insecure / error prone - since this is a passenger app run as the user,
   // I'm not worried about exposing files this way
-  const normal_req_url = path.normalize(req.url); // no "../../../../" shenanigans
+  var req_path = req.path;
+  req_path = path.normalize(req.path); // no "../../../../" shenanigans
 
   // strip BASE_URI from the beginning of request, or 403 error
-  if (!normal_req_url.startsWith(BASE_URI)) {
-    const err_msg = `\
-            invalid request "${normal_req_url}"\n\
+  if (!req_path.startsWith(BASE_URI)) {
+    const err_msg = `\f
+            invalid request "${req_path}"\n\
             request should start with "${BASE_URI}"\
         `;
     res.status(403).send(err_msg);
     return;
   }
-  const request_path = normal_req_url.slice(BASE_URI.length);
+  req_path = req_path.slice(BASE_URI.length);
+  req_path = req_path.replace(/^\/+/, ""); // no leading slashes
 
-  if (request_path != "") {
-    const absolute_path = relative_path(path.join(BASE_URI, "public", request_path));
-    try {
-      const content = read_file(absolute_path);
-      res.send(content);
-    } catch {
-      res.status(404).send(`failed to read file "${absolute_path}"`);
-    }
-  } else {
+  if (req_path == "") {
     const JSON_DATA = read_file(relative_path("make-json/hierarchy.json"));
     const HIDDEN_JSON_DATA = read_file(relative_path("make-json/hidden-hierarchy.json"));
     const DIRECTORY_PREREQS_DATA = read_file(relative_path("make-json/directory-prereqs.json"));
@@ -79,6 +79,47 @@ APP.get("*", (req, res) => {
       custom_top: custom_top,
       custom_bottom: custom_bottom,
     });
+  } else if (req_path.startsWith("module-load/")) {
+    // split by slashes and then URL decode
+    var request_path_components = req_path.split("/");
+    request_path_components = request_path_components.map((x) => {
+      return decodeURIComponent(x);
+    });
+    // can't use '/', so substitute '|'
+    request_path_components = request_path_components.map((x) => {
+      return x.replace(/\|/, "/");
+    });
+    const modules = request_path_components.slice(1); // first component is "module-load"
+    const module_command_arr = ["module", "load"].concat(modules);
+    const module_command_str = shellQuote.quote(module_command_arr);
+    const module_command_str_quoted = shellQuote.quote([module_command_str]);
+    const bash_command = `/bin/bash --login -c ${module_command_str_quoted} 2>&1`;
+    try {
+      const proc = spawn(bash_command, {
+        encoding: "utf-8",
+        shell: true,
+      });
+      let output = "";
+      proc.stdout.on("data", (data) => {
+        output += data;
+      });
+      proc.on("close", (code) => {
+        res.send(output);
+      });
+      proc.on("error", (e) => {
+        res.send(e.message);
+      });
+    } catch (e) {
+      res.send(e.message);
+    }
+  } else {
+    const absolute_path = relative_path(path.join(BASE_URI, "public", decodeURI(req_path)));
+    try {
+      const content = read_file(absolute_path);
+      res.send(content);
+    } catch {
+      res.status(404).send(`failed to read file "${absolute_path}"`);
+    }
   }
 });
 
