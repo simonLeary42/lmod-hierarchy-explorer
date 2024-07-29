@@ -10,7 +10,6 @@ const { spawn } = require("child_process");
 const shellQuote = require("shell-quote");
 
 const BASE_URI = process.env.PASSENGER_BASE_URI;
-const TITLE = "Unity Module Explorer";
 
 function relative_path(_path) {
   return path.join(__dirname, _path);
@@ -67,9 +66,7 @@ APP.get("*", (req, res) => {
       if (e.code == "ENOENT") {
       }
     }
-    // const body_file_contents = read_file(relative_path("public/index.ejs"), "utf-8");
     res.render(relative_path("public/index.ejs"), {
-      title: TITLE,
       JSONDATA: JSON.stringify(JSON_DATA),
       JSONDATA_HIDDEN: JSON.stringify(HIDDEN_JSON_DATA),
       DIRECTORY_PREREQS: JSON.stringify(DIRECTORY_PREREQS_DATA),
