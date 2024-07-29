@@ -423,8 +423,8 @@ var jsonTree = (function () {
     if (label !== null) {
       labelEl = el.querySelector(".jsontree_label");
       moreContentEl = el.querySelector(".jsontree_show-more");
-      labelEl.addEventListener("click", self.toggle.bind(self), false);
-      moreContentEl.addEventListener("click", self.toggle.bind(self), false);
+      labelEl.addEventListener("click", self.toggle.bind(self, false));
+      moreContentEl.addEventListener("click", self.toggle.bind(self, false));
       self.isRoot = false;
     } else {
       self.isRoot = true;
