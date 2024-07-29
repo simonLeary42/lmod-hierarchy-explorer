@@ -1,42 +1,12 @@
 <link rel="shortcut icon" type="image/x-icon" href="/public/favicon.ico" />
-<!-- FIXME hardcoded path -->
-<link
-  rel="preload stylesheet"
-  media="all"
-  href="/pun/sys/dashboard/assets/application-3b443381256f2d9a75d3489548424fe0f455d1ca09838171ddf0e686b9a7f21c.css"
-  as="style"
-  type="text/css"
-/>
-<!-- fixing some weirdness introduced by the OOD stylesheet -->
-<style>
-  button,
-  input {
-    border-radius: 5px;
-    border-width: 1px;
-  }
-
-  label {
-    margin: 0;
-  }
-</style>
+<link href="custom.css" rel="stylesheet" />
 <header>
-  <nav
-    class="navbar navbar-expand-md shadow-sm navbar-color navbar-dark"
-    aria-label="Navigation"
-    style="background-color: #53565a"
-  >
-    <a class="navbar-brand" href="/pun/sys/dashboard/">Unity OnDemand</a>
-    <ul class="navbar-nav" style="margin-left: auto">
-      <li class="nav-item" style="float: right">
-        <a class="nav-link" href="/logout"
-          ><i class="fas fa-sign-out-alt" aria-hidden="true"></i
-          ><span class="d-sm-none d-md-none d-lg-inline"> Log Out</span></a
-        >
-      </li>
-    </ul>
+  <title>Unity Module Explorer</title>
+  <nav class="navbar" aria-label="Navigation" style="color: #fff; background-color: #53565a">
+    <a class="navbar-brand" style="color: #fff" href="/pun/sys/dashboard/">Unity OnDemand</a>
   </nav>
 </header>
-<div class="container-md content mt-4" role="main">
+<div class="container-md" role="main" style="margin-top: 1.5rem">
   <h2>Unity Module Explorer</h2>
   <p style="width: 700px">
     For information on using modules, read the
@@ -49,5 +19,3 @@
     module hierarchy, ask the
     <a href="https://unity.rc.umass.edu/community-slack">Slack helpdesk</a>.
   </p>
-  <!-- </div> -->
-  <!-- do not close this div! -->
