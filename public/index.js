@@ -221,6 +221,8 @@ function update_expanded_or_collapsed() {
 }
 
 function update_trees(data, data_hidden) {
+  // selection is cleared regardless, but this way my MutationObserver is properly activated
+  clear_selected_modules();
   tree.loadData(data);
   tree_hidden.loadData(data_hidden);
   // automatically collapsed after loadData
