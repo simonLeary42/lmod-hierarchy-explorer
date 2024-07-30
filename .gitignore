@@ -1,6 +1,7 @@
 node_modules
 package-lock.json
 tmp
-make-json/hierarchy.json
-make-json/hidden-hierarchy.json
-make-json/directory-prereqs.json
+public/hierarchy.json
+public/hidden-hierarchy.json
+public/directory-prereqs.json
+public/arch2modulepath.json
