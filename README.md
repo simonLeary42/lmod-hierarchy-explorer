@@ -55,7 +55,7 @@ This is a dictionary where the key is a CPU architecture (example: `uname -m`) a
   "spider": "/usr/share/lmod/lmod/libexec/spider",
   "profile": "/usr/share/lmod/lmod/init/profile",
   "lmodrc": "/opt/lmod/config/lmodrc.lua",
-  "package_dir": "/modules/lmod/package-dir"
+  "package_dir": "/opt/lmod/config/package-dir"
 }
 ```
 
