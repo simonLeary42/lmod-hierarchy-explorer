@@ -54,10 +54,10 @@ This is a dictionary where the key is a CPU architecture (example: `uname -m`) a
 {
   "spider": "/usr/share/lmod/lmod/libexec/spider",
   "profile": "/usr/share/lmod/lmod/init/profile",
-  "lmodrc": "/opt/lmod/config/lmodrc.lua"
+  "lmodrc": "/opt/lmod/config/lmodrc.lua",
+  "package_dir": "/modules/lmod/package-dir"
 }
 ```
-
 
 ### configure the settings in `make-json.py`
 * `HIDDEN_PARENT_DIRS` : list of directories which should be moved into the `hidden modules` section

@@ -1,5 +1,6 @@
 {
   "spider": "/usr/share/lmod/lmod/libexec/spider",
   "profile": "/usr/share/lmod/lmod/init/profile",
-  "lmodrc": "/modules/lmod/lmodrc.lua"
+  "lmodrc": "/modules/lmod/lmodrc.lua",
+  "package_dir": "/modules/lmod/package-dir"
 }

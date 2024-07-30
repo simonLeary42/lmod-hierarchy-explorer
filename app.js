@@ -97,6 +97,7 @@ function send_module_load(req, res) {
   });
   const setup_and_module_command =
     `source '${LMOD_PATHS["profile"]}'; ` +
+    `export 'LMOD_PACKAGE_PATH=${LMOD_PATHS["package_dir"]}'; ` +
     `export 'LMOD_RC=${LMOD_PATHS["lmodrc"]}'; ` +
     `export 'MODULEPATH=${ARCH2MODULEPATH[arch]}'; ` +
     `export LMOD_CACHED_LOADS=yes; ` +
