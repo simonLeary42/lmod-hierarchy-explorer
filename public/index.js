@@ -7,6 +7,7 @@ const module_load_command_output_codeblock = document.getElementById("module_loa
 const clear_selected_modules_button = document.getElementById("clear_selected_modules");
 const search_form = document.getElementById("search_form");
 const search_form_textbox = document.getElementById("search_form_textbox");
+const last_updated_span = document.getElementById("last-updated");
 
 var tree = jsonTree.create({}, module_tree_wrapper);
 var tree_hidden = jsonTree.create({}, module_hidden_tree_wrapper);
@@ -20,8 +21,6 @@ var MTIME = 0;
 
 // used in update_command_output() to enforce a maximum of one running command
 var previous_abort_controller = null;
-
-// FUNCTIONS ///////////////////////////////////////////////////////////////////////////////////////
 
 function is_object_empty(object) {
   return Object.keys(object).length === 0;
@@ -140,6 +139,7 @@ async function update_command_output(modules, arch) {
   try {
     const response = await fetch(fetch_url, { signal });
     if (!response.ok) {
+      // FIXME this makes "Object[response]", useful error is in response.text
       console.error(`bad fetch response: ${response}`);
       module_load_command_output_codeblock.textContent = "(fetch error, See console)";
       return;
@@ -185,6 +185,8 @@ function update_command_and_output() {
       architectures.push(arch);
     }
   });
+  // FIXME "noarch" is compatible with the other architectures, so checking length > 1
+  // isn't good enough
   if (architectures.length > 1) {
     overwrite_command_and_output(
       `( error: incompatible architectures: ${JSON.stringify(architectures)} )`
@@ -197,7 +199,7 @@ function update_command_and_output() {
 }
 
 function overwrite_command_and_output(x) {
-  abort_command_if_running(); // this will overwrite output textContent
+  abort_command_if_running(); // running command would later overwrite textContent
   module_load_command_codeblock.textContent = x;
   module_load_command_output_codeblock.textContent = x;
 }
@@ -228,6 +230,7 @@ function update_trees(data, data_hidden) {
 async function fetch_and_parse_json(url) {
   const response = await fetch(url);
   if (!response.ok) {
+    // FIXME response is [Object response]
     throw new Error(`bad fetch response: ${response}`);
   }
   const content = await response.text();
@@ -257,9 +260,10 @@ async function main() {
   TREE_ORIG = await fetch_and_parse_json(`${document.baseURI}/hierarchy.json`);
   TREE_HIDDEN_ORIG = await fetch_and_parse_json(`${document.baseURI}/hidden-hierarchy.json`);
   DIRECTORY_PREREQS = await fetch_and_parse_json(`${document.baseURI}/directory-prereqs.json`);
+  // the backend actually returns an integer here, but JSON.parse doesn't seem to care
   MTIME = await fetch_and_parse_json(`${document.baseURI}/get-mtime`);
 
-  document.querySelector("#last-updated").textContent = human_readable_datetime(parseInt(MTIME));
+  last_updated_span.textContent = human_readable_datetime(parseInt(MTIME));
 
   update_trees(make_names_strong(TREE_ORIG), make_names_strong(TREE_HIDDEN_ORIG));
 

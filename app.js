@@ -45,10 +45,10 @@ function get_relative_request_path(req, res) {
   return decodeURI(rel_req_path);
 }
 
-function render_default_page(req, res) {
+function send_default_page(req, res) {
   var custom_top = "";
   try {
-    custom_top = read_file(relative_path("public/custom_top.html"), "utf-8");
+    custom_top = read_file(relative_path("public/custom_top.html"));
   } catch (e) {
     // do nothing if ENOENT
     if (e.code != "ENOENT") {
@@ -57,7 +57,7 @@ function render_default_page(req, res) {
   }
   var custom_bottom = "";
   try {
-    custom_bottom = read_file(relative_path("public/custom_bottom.html"), "utf-8");
+    custom_bottom = read_file(relative_path("public/custom_bottom.html"));
   } catch (e) {
     // do nothing if ENOENT
     if (e.code != "ENOENT") {
@@ -71,13 +71,13 @@ function render_default_page(req, res) {
   });
 }
 
-function render_module_load(req, res) {
+function send_module_load(req, res) {
   const rel_req_path = get_relative_request_path(req);
   // split by slashes and then URL decode
   var request_path_components = rel_req_path.split("/");
   if (request_path_components.length < 3) {
     res
-      .status(403)
+      .status(500)
       .send('error: at least 3 arguments required: "module-load/architecture/modulename"');
     return;
   }
@@ -86,7 +86,7 @@ function render_module_load(req, res) {
   });
   const arch = request_path_components[1];
   if (!(arch in ARCH2MODULEPATH)) {
-    res.status(403).send(`error: invalid architecture: "${arch}"`);
+    res.status(500).send(`error: invalid architecture: "${arch}"`);
     return;
   }
   // first component is "module-load", second is architecture
@@ -123,7 +123,7 @@ function render_module_load(req, res) {
   }
 }
 
-async function render_mtime(req, res) {
+async function send_mtime(req, res) {
   try {
     const stat2 = util.promisify(fs.stat);
     const stats = await stat2(relative_path("public/hierarchy.json"));
@@ -133,7 +133,7 @@ async function render_mtime(req, res) {
   }
 }
 
-function render_file(req, res) {
+function send_file(req, res) {
   const rel_req_path = get_relative_request_path(req);
   const absolute_path = relative_path(path.join(BASE_URI, "public", decodeURI(rel_req_path)));
   try {
@@ -153,13 +153,13 @@ APP.set("view engine", "ejs");
 APP.get("*", (req, res) => {
   const rel_req_path = get_relative_request_path(req, res);
   if (rel_req_path == "") {
-    render_default_page(req, res);
+    send_default_page(req, res);
   } else if (rel_req_path.startsWith("module-load/")) {
-    render_module_load(req, res);
+    send_module_load(req, res);
   } else if (rel_req_path == "get-mtime") {
-    render_mtime(req, res);
+    send_mtime(req, res);
   } else {
-    render_file(req, res);
+    send_file(req, res);
   }
 });
 
