@@ -131,8 +131,12 @@ APP.get("*", (req, res) => {
     try {
       const content = read_file(absolute_path);
       res.send(content);
-    } catch {
-      res.status(404).send(`failed to read file "${absolute_path}"`);
+    } catch (e) {
+      if (e.code != "ENOENT") {
+        res.status(404).send(`no such file or directory: "${absolute_path}"`);
+      } else {
+        res.status(403).send(e.message);
+      }
     }
   }
 });
