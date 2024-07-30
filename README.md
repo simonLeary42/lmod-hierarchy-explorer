@@ -14,17 +14,25 @@ I don't use `express` to serve content. I manually parse the request path and re
 
 
 ## dependencies:
-* Lmod
-* node (`npm`)
+* Lmod (I used 8.6.19)
+* node (I used 14.21.3)
+* npm (I used 6.14.18)
+* python (I used 3.8.10)
 
 ## install
 
-### git clone (for Open OnDemand)
+### git clone (example for Open OnDemand)
 
-```
+```sh
 cd /var/www/ood/apps/sys/
 mkdir modules && cd modules
 git clone https://github.com/simonLeary42/lmod-hierarchy-explorer.git .
+```
+
+### install nodeJS libraries (`package.json`)
+
+```sh
+npm install
 ```
 
 ### configure `public/arch2modulepath.json`
@@ -46,7 +54,7 @@ This is a dictionary where the key is a CPU architecture (example: `uname -m`) a
 {
   "spider": "/usr/share/lmod/lmod/libexec/spider",
   "profile": "/usr/share/lmod/lmod/init/profile",
-  "lmodrc": "/modules/lmod/lmodrc.lua"
+  "lmodrc": "/opt/lmod/config/lmodrc.lua"
 }
 ```
 
@@ -55,10 +63,11 @@ This is a dictionary where the key is a CPU architecture (example: `uname -m`) a
 * `HIDDEN_PARENT_DIRS` : list of directories which should be moved into the `hidden modules` section
 * `VERSION_BLACKLIST` : list of module versions that should not be displayed at all, even in the `hidden modules` section
 
+### build json files
 ```
-npm install --prefix $PWD fs ejs json express shell-quote
 ./make-json.py
 ```
-you also have to [add the app to your OOD dashboard layout](https://osc.github.io/ood-documentation/release-2.0/customization.html#control-which-apps-appear-in-the-dashboard-navbar), but after version 3.0 this won't be necessary
 
-See example-output.tar.gz for results
+### notes
+
+you may also have to [add the app to your OOD dashboard layout](https://osc.github.io/ood-documentation/release-2.0/customization.html#control-which-apps-appear-in-the-dashboard-navbar), but after version 3.0 this won't be necessary
