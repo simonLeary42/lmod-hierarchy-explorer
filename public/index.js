@@ -7,13 +7,15 @@ const module_load_command_output_codeblock = document.getElementById("module_loa
 const clear_selected_modules_button = document.getElementById("clear_selected_modules");
 const search_form = document.getElementById("search_form");
 const search_form_textbox = document.getElementById("search_form_textbox");
-// TODO websocket
-// defined in .ejs
-// const json_data_orig = JSON.parse(<%- JSONDATA %>);
-// const json_data_orig_hidden = JSON.parse(<%- JSONDATA_HIDDEN %>);
-// const directory_prereqs = JSON.parse(<%- DIRECTORY_PREREQS %>);
+
 var tree = jsonTree.create({}, module_tree_wrapper);
 var tree_hidden = jsonTree.create({}, module_hidden_tree_wrapper);
+
+// these are fetched from backend during main()
+var ARCH2MODULEPATH = {};
+var TREE_ORIG = {};
+var TREE_HIDDEN_ORIG = {};
+var DIRECTORY_PREREQS = {};
 
 // used in update_command_output() to enforce a maximum of one running command
 var previous_abort_controller = null;
@@ -63,11 +65,15 @@ function make_names_strong(tree) {
 
 function filter_module_trees(substr) {
   if (substr == "") {
-    update_trees(make_names_strong(json_data_orig), make_names_strong(json_data_orig_hidden));
+    update_trees(make_names_strong(TREE_ORIG), make_names_strong(TREE_HIDDEN_ORIG));
+    // if we're going back to full unfiltered output, collapse
+    if (expand_collapse_box.checked) {
+      expand_collapse_box.click();
+    }
     return;
   }
-  filtered_tree = filter_tree_by_substring(json_data_orig, substr);
-  filtered_tree_hidden = filter_tree_by_substring(json_data_orig_hidden, substr);
+  filtered_tree = filter_tree_by_substring(TREE_ORIG, substr);
+  filtered_tree_hidden = filter_tree_by_substring(TREE_HIDDEN_ORIG, substr);
   if (is_object_empty(filtered_tree) && is_object_empty(filtered_tree_hidden)) {
     alert("no modules found.");
     return;
@@ -93,29 +99,32 @@ function get_module_directory(module_jsontree_node) {
     .querySelector(".jsontree_label").textContent;
 }
 
-function remove_duplicates_keep_first(x) {
-  var output = [];
-  x.forEach((e) => {
-    if (output.includes(e)) {
-      return;
-    } else {
-      output.push(e);
-    }
-  });
-  return output;
+function get_module_arch(module_jsontree_node) {
+  return module_jsontree_node.parentNode
+    .closest(".jsontree_node")
+    .parentNode.closest(".jsontree_node")
+    .querySelector(".jsontree_label-wrapper")
+    .querySelector(".jsontree_label").textContent;
 }
 
-async function update_command_output(modules) {
+function get_module_name_version(module_jsontree_node) {
+  // .textContent automatically removes the <strong></strong>
+  return module_jsontree_node
+    .querySelector(".jsontree_value-wrapper")
+    .querySelector(".jsontree_value").textContent;
+}
+
+function abort_command_if_running() {
   if (previous_abort_controller) {
     previous_abort_controller.abort();
   }
+}
+
+async function update_command_output(modules, arch) {
+  abort_command_if_running();
   previous_abort_controller = new AbortController();
   const { signal } = previous_abort_controller;
 
-  if (modules.length == 0) {
-    module_load_command_output_codeblock.textContent = "(no modules selected)";
-    return;
-  }
   module_load_command_output_codeblock.textContent = "(command in progress...)";
 
   // can't use slashes in a URL, and OOD doesn't like URL encoded slashes
@@ -123,8 +132,10 @@ async function update_command_output(modules) {
   const modules_no_slashes = modules.map((x) => {
     return x.replace(/\//, "|");
   });
+
+  args = [arch].concat(modules_no_slashes);
   // document.baseURI may end in a slash, but double slashes doesn't break the backend
-  const fetch_url = encodeURI(document.baseURI + "/module-load/" + modules_no_slashes.join("/"));
+  const fetch_url = encodeURI(document.baseURI + "/module-load/" + args.join("/"));
   try {
     const response = await fetch(fetch_url, { signal });
     if (!response.ok) {
@@ -145,37 +156,49 @@ async function update_command_output(modules) {
 }
 
 function update_command(modules) {
-  if (modules.length == 0) {
-    module_load_command_codeblock.textContent = "(no modules selected)";
-    return;
-  }
   const command = ["module", "load"].concat(modules).join(" ");
   module_load_command_codeblock.textContent = command;
 }
 
 function update_command_and_output() {
   marked_nodes = document.querySelectorAll(".jsontree_node_marked");
+  if (marked_nodes.length == 0) {
+    overwrite_command_and_output(`(no modules selected)`);
+    return;
+  }
+  var architectures = [];
   var modules = [];
   marked_nodes.forEach((marked_node) => {
     // if this module directory has any prerequisite modules, add those modules to the command
-    _directory = marked_node.parentNode
-      .closest(".jsontree_node")
-      .querySelector(".jsontree_label-wrapper")
-      .querySelector(".jsontree_label").textContent;
-    if (_directory in directory_prereqs) {
-      directory_prereqs[_directory].forEach((prereq) => {
-        modules.push(prereq);
+    _directory = get_module_directory(marked_node);
+    if (_directory in DIRECTORY_PREREQS) {
+      DIRECTORY_PREREQS[_directory].forEach((prereq) => {
+        if (!modules.includes(prereq)) {
+          modules.push(prereq);
+        }
       });
     }
-    // .textContent automatically removes the <strong></strong>
-    modules.push(
-      marked_node.querySelector(".jsontree_value-wrapper").querySelector(".jsontree_value")
-        .textContent
-    );
+    modules.push(get_module_name_version(marked_node));
+    arch = get_module_arch(marked_node);
+    if (!architectures.includes(arch)) {
+      architectures.push(arch);
+    }
   });
-  modules = remove_duplicates_keep_first(modules);
+  if (architectures.length > 1) {
+    overwrite_command_and_output(
+      `( error: incompatible architectures: ${JSON.stringify(architectures)} )`
+    );
+    return;
+  }
+  arch = architectures[0];
   update_command(modules);
-  update_command_output(modules);
+  update_command_output(modules, arch);
+}
+
+function overwrite_command_and_output(x) {
+  abort_command_if_running(); // this will overwrite output textContent
+  module_load_command_codeblock.textContent = x;
+  module_load_command_output_codeblock.textContent = x;
 }
 
 function clear_selected_modules() {
@@ -201,34 +224,50 @@ function update_trees(data, data_hidden) {
   update_expanded_or_collapsed();
 }
 
-// MAIN ////////////////////////////////////////////////////////////////////////////////////////////
+async function fetch_and_parse_json(url) {
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error(`bad fetch response: ${response}`);
+  }
+  const content = await response.text();
+  return JSON.parse(content);
+}
 
-update_trees(make_names_strong(json_data_orig), make_names_strong(json_data_orig_hidden));
+async function main() {
+  ARCH2MODULEPATH = await fetch_and_parse_json(`${document.baseURI}/arch2modulepath.json`);
+  TREE_ORIG = await fetch_and_parse_json(`${document.baseURI}/hierarchy.json`);
+  TREE_HIDDEN_ORIG = await fetch_and_parse_json(`${document.baseURI}/hidden-hierarchy.json`);
+  DIRECTORY_PREREQS = await fetch_and_parse_json(`${document.baseURI}/directory-prereqs.json`);
 
-expand_collapse_box.addEventListener("change", update_expanded_or_collapsed);
-clear_selected_modules_button.addEventListener("click", clear_selected_modules);
-show_hidden_box.addEventListener("change", function () {
-  module_hidden_tree_wrapper.classList.toggle("display_none");
-});
-search_form.addEventListener("submit", function (event) {
-  event.preventDefault(); // Prevent form submission
-  filter_module_trees(search_form_textbox.value);
-});
+  update_trees(make_names_strong(TREE_ORIG), make_names_strong(TREE_HIDDEN_ORIG));
 
-const observer = new MutationObserver((mutations) => {
-  mutations.forEach((mutation) => {
-    if (
-      mutation.type === "attributes" &&
-      mutation.attributeName === "class" &&
-      mutation.target.classList.contains("jsontree_node")
-    ) {
-      update_command_and_output();
-    }
+  expand_collapse_box.addEventListener("change", update_expanded_or_collapsed);
+  clear_selected_modules_button.addEventListener("click", clear_selected_modules);
+  show_hidden_box.addEventListener("change", function () {
+    module_hidden_tree_wrapper.classList.toggle("display_none");
   });
-});
-observer.observe(document.body, {
-  childList: true,
-  subtree: true,
-  attributes: true,
-});
-update_command_and_output();
+  search_form.addEventListener("submit", function (event) {
+    event.preventDefault(); // Prevent form submission
+    filter_module_trees(search_form_textbox.value);
+  });
+
+  const observer = new MutationObserver((mutations) => {
+    mutations.forEach((mutation) => {
+      if (
+        mutation.type === "attributes" &&
+        mutation.attributeName === "class" &&
+        mutation.target.parentNode.classList.contains("jsontree_leaf-nodes")
+      ) {
+        update_command_and_output();
+      }
+    });
+  });
+  observer.observe(document.body, {
+    childList: true,
+    subtree: true,
+    attributes: true,
+  });
+  update_command_and_output();
+}
+
+main();

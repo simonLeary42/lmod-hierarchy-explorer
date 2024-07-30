@@ -1,29 +1,46 @@
 #!/usr/bin/env python3
+import os
 import json
 import subprocess
 
-LMOD_SPIDER = "/usr/share/lmod/lmod/libexec/spider"
+with open("./public/lmod-paths.json", "r", encoding="utf8") as f:
+    lmod_paths = json.load(f)
+    LMOD_SPIDER = lmod_paths["spider"]
 
-# ARCH2MODULEPATH = {
-#     "noarch": "/opt/modulefiles/noarch/Core",
-#     "x86_64": "/opt/modulefiles/x86_64/Core",
-#     "aarch64": "/opt/modulefiles/aarch64/Core",
-#     "ppc64le": "/opt/modulefiles/ppc64le/Core"
-# }
-
-ARCH2MODULEPATH = {"noarch": "/modules/modulefiles/noarch"}
-SPACK_ARCHES = ["x86_64", "aarch64", "ppc64le"]
-os = "linux-ubuntu20.04"
-for arch in SPACK_ARCHES:
-    ARCH2MODULEPATH[arch] = (
-        f"/modules/modulefiles/{arch}:/modules/spack_modulefiles/{os}-{arch}/Core"
-    )
+with open("./public/arch2modulepath.json", "r", encoding="utf8") as f:
+    ARCH2MODULEPATH = json.load(f)
 
 # when a hidden module adds a new branch to the hierarchy,
 # Lmod spider does not give the hidden property to the modules in that new branch
 HIDDEN_PARENT_DIRS = ["/modules/uri_modulefiles/all", "/modules/uri_modulefiles"]
 
 VERSION_BLACKLIST = ["latest", "default"]
+
+
+def readlink_recursive(path):
+    if os.path.dirname(path) == path:  # root
+        return path
+    if not os.path.isabs(path):
+        path = os.path.abspath(path)
+    while os.path.islink(path):
+        path = os.readlink(path)
+        if not os.path.isabs(path):
+            path = os.path.abspath(path)
+    return os.path.join(readlink_recursive(os.path.dirname(path)), os.path.basename(path))
+
+
+# spack generated modules add new directories to MODULEPATH using their absolute paths
+# put the symlink into those absolute paths by finding/replacing
+PATH_REPLACEMENTS = {readlink_recursive("/modules/spack_modulefiles"): "/modules/spack_modulefiles"}
+
+
+def do_path_replacements(x):
+    x = readlink_recursive(x)
+    for find_this, replace_with_this in PATH_REPLACEMENTS.items():
+        if x.startswith(find_this):
+            # strip off leading characters, then prepend replacement
+            x = replace_with_this + x[len(find_this) :]
+    return x
 
 
 def nested_dict_append(_dict, key1, key2, value):
@@ -47,7 +64,7 @@ for arch, modulepath in ARCH2MODULEPATH.items():
         continue
     for module_name, modulefile2module_info in module_name2modulefile.items():
         for modulefile, modulefile_info in modulefile2module_info.items():
-            parent_dir = modulefile_info["mpath"]
+            parent_dir = do_path_replacements(modulefile_info["mpath"])
             if "parentAA" in modulefile_info:
                 # this is always a nested list but I don't know why
                 (prereqs,) = modulefile_info["parentAA"]
@@ -105,15 +122,15 @@ for _dict in [modules, hidden_modules]:
         for parent_dir, names in parent_dir2name.items():
             _dict[arch][parent_dir] = sorted(names)
 
-with open("hierarchy.json", "w", encoding="utf8") as json_out_file:
+with open("./public/hierarchy.json", "w", encoding="utf8") as json_out_file:
     json.dump(modules, json_out_file)
 
-with open("hidden-hierarchy.json", "w", encoding="utf8") as json_out_file:
+with open("./public/hidden-hierarchy.json", "w", encoding="utf8") as json_out_file:
     json.dump(hidden_modules, json_out_file)
 
-with open("directory-prereqs.json", "w", encoding="utf8") as prereqs_file:
+with open("./public/directory-prereqs.json", "w", encoding="utf8") as prereqs_file:
     json.dump(directory_prereqs, prereqs_file)
 
 print(
-    "hiearchy.json, hidden_hierarchy.json, and directory-prereqs.json created in your current working directory."
+    "./public/{hiearchy.json,hidden_hierarchy.json,directory-prereqs.json} created in your current working directory."
 )

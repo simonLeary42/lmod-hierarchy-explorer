@@ -24,6 +24,14 @@ function get_last_modified_date(_path) {
   return stats.mtime;
 }
 
+function parse_json_file(...args) {
+  const content = read_file(...args);
+  return JSON.parse(content);
+}
+
+const LMOD_PATHS = parse_json_file("./public/lmod-paths.json");
+const ARCH2MODULEPATH = parse_json_file("./public/arch2modulepath.json");
+
 const APP = express();
 
 APP.set("view engine", "ejs");
@@ -46,12 +54,7 @@ APP.get("*", (req, res) => {
   req_path = req_path.replace(/^\/+/, ""); // no leading slashes
 
   if (req_path == "") {
-    const JSON_DATA = read_file(relative_path("make-json/hierarchy.json"));
-    const HIDDEN_JSON_DATA = read_file(relative_path("make-json/hidden-hierarchy.json"));
-    const DIRECTORY_PREREQS_DATA = read_file(relative_path("make-json/directory-prereqs.json"));
-    const JSON_LAST_MODIFIED_DATE = get_last_modified_date(
-      relative_path("make-json/hierarchy.json")
-    );
+    const JSON_LAST_MODIFIED_DATE = get_last_modified_date(relative_path("public/hierarchy.json"));
     var custom_top = "";
     try {
       custom_top = read_file(relative_path("public/custom_top.html"), "utf-8");
@@ -67,9 +70,6 @@ APP.get("*", (req, res) => {
       }
     }
     res.render(relative_path("public/index.ejs"), {
-      JSONDATA: JSON.stringify(JSON_DATA),
-      JSONDATA_HIDDEN: JSON.stringify(HIDDEN_JSON_DATA),
-      DIRECTORY_PREREQS: JSON.stringify(DIRECTORY_PREREQS_DATA),
       base: `https://${path.join(req.get("host"), BASE_URI + "/")}`,
       lastModifiedDate: JSON_LAST_MODIFIED_DATE,
       custom_top: custom_top,
@@ -78,18 +78,32 @@ APP.get("*", (req, res) => {
   } else if (req_path.startsWith("module-load/")) {
     // split by slashes and then URL decode
     var request_path_components = req_path.split("/");
+    if (request_path_components.length < 3) {
+      res
+        .status(403)
+        .send('error: at least 3 arguments required: "module-load/architecture/modulename"');
+      return;
+    }
     request_path_components = request_path_components.map((x) => {
       return decodeURIComponent(x);
     });
+    const arch = request_path_components[1];
+    if (!(arch in ARCH2MODULEPATH)) {
+      res.status(403).send(`error: invalid architecture: "${arch}"`);
+      return;
+    }
+    // first component is "module-load", second is architecture
+    const modules_no_slashes = request_path_components.slice(2);
     // can't use '/', so substitute '|'
-    request_path_components = request_path_components.map((x) => {
+    const modules = modules_no_slashes.map((x) => {
       return x.replace(/\|/, "/");
     });
-    const modules = request_path_components.slice(1); // first component is "module-load"
-    const module_command_arr = ["module", "load"].concat(modules);
-    const module_command_str = shellQuote.quote(module_command_arr);
-    const module_command_str_quoted = shellQuote.quote([module_command_str]);
-    const bash_command = `/bin/bash --login -c ${module_command_str_quoted} 2>&1`;
+    const setup_and_module_command =
+      `source '${LMOD_PATHS["profile"]}'; ` +
+      `export 'MODULEPATH=${ARCH2MODULEPATH[arch]}'; ` +
+      "module load " +
+      shellQuote.quote(modules);
+    const bash_command = `/bin/bash -c ${shellQuote.quote([setup_and_module_command])} 2>&1`;
     try {
       const proc = spawn(bash_command, {
         encoding: "utf-8",

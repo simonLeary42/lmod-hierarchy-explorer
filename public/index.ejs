@@ -49,13 +49,7 @@
       <hr />
       <h4>Hidden Modules</h4>
     </div>
-    <hr />
     <%- custom_bottom %>
-    <script>
-      const json_data_orig = JSON.parse(<%- JSONDATA %>)
-      const json_data_orig_hidden = JSON.parse(<%- JSONDATA_HIDDEN %>)
-      const directory_prereqs = JSON.parse(<%- DIRECTORY_PREREQS %>)
-    </script>
     <script src="jsonTree.js"></script>
     <script src="index.js"></script>
   </body>
