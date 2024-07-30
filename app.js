@@ -134,11 +134,7 @@ function render_file(req, res) {
     const content = read_file(absolute_path);
     res.send(content);
   } catch (e) {
-    if (e.code != "ENOENT") {
-      res.status(404).send(`no such file or directory: "${absolute_path}"`);
-    } else {
-      res.status(403).send(e.message);
-    }
+    res.status(500).send(e.message);
   }
 }
 
