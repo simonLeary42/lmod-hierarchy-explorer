@@ -59,14 +59,18 @@ APP.get("*", (req, res) => {
     try {
       custom_top = read_file(relative_path("public/custom_top.html"), "utf-8");
     } catch (e) {
-      if (e.code == "ENOENT") {
+      // do nothing if ENOENT
+      if (e.code != "ENOENT") {
+        throw e;
       }
     }
     var custom_bottom = "";
     try {
       custom_bottom = read_file(relative_path("public/custom_bottom.html"), "utf-8");
     } catch (e) {
-      if (e.code == "ENOENT") {
+      // do nothing if ENOENT
+      if (e.code != "ENOENT") {
+        throw e;
       }
     }
     res.render(relative_path("public/index.ejs"), {
