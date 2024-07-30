@@ -298,4 +298,6 @@ async function main() {
   update_command_and_output();
 }
 
-main();
+document.addEventListener("DOMContentLoaded", () => {
+  main();
+});
