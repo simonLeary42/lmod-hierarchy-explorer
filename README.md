@@ -5,7 +5,7 @@ It provides an interface similar to `module avail`, but on the whole hierarchy. 
 
 A cron job should be set up to update the hierarchy json files (`make-json.py`).
 
-![image](https://github.com/simonleary-umass-edu/lmod-hierarchy-explorer/assets/71396965/cbd4aa72-afdb-491e-ab56-5f870bb9e630)
+<img width="961" alt="image" src="https://github.com/user-attachments/assets/b8bb972a-8941-480e-92e7-1a0342f77ce1">
 
 
 ## disclaimer
