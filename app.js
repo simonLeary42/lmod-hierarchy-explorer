@@ -29,6 +29,119 @@ function parse_json_file(...args) {
   return JSON.parse(content);
 }
 
+function get_relative_request_path(req, res) {
+  // this URL mangling is insecure / error prone - since this is a passenger app run as the user,
+  // I'm not worried about exposing files this way
+  var rel_req_path = req.path;
+  rel_req_path = path.normalize(req.path); // no "../../../../" shenanigans
+
+  // strip BASE_URI from the beginning of request, or 403 error
+  if (!rel_req_path.startsWith(BASE_URI)) {
+    const err_msg = `\f
+            invalid request "${rel_req_path}"\n\
+            request should start with "${BASE_URI}"\
+        `;
+    res.status(403).send(err_msg);
+    return;
+  }
+  rel_req_path = rel_req_path.slice(BASE_URI.length);
+  rel_req_path = rel_req_path.replace(/^\/+/, ""); // no leading slashes
+  return decodeURI(rel_req_path);
+}
+
+function render_default_page(req, res) {
+  const JSON_LAST_MODIFIED_DATE = get_last_modified_date(relative_path("public/hierarchy.json"));
+  var custom_top = "";
+  try {
+    custom_top = read_file(relative_path("public/custom_top.html"), "utf-8");
+  } catch (e) {
+    // do nothing if ENOENT
+    if (e.code != "ENOENT") {
+      throw e;
+    }
+  }
+  var custom_bottom = "";
+  try {
+    custom_bottom = read_file(relative_path("public/custom_bottom.html"), "utf-8");
+  } catch (e) {
+    // do nothing if ENOENT
+    if (e.code != "ENOENT") {
+      throw e;
+    }
+  }
+  res.render(relative_path("public/index.ejs"), {
+    base: `https://${path.join(req.get("host"), BASE_URI + "/")}`,
+    lastModifiedDate: JSON_LAST_MODIFIED_DATE,
+    custom_top: custom_top,
+    custom_bottom: custom_bottom,
+  });
+}
+
+function render_module_load(req, res) {
+  const rel_req_path = get_relative_request_path(req);
+  // split by slashes and then URL decode
+  var request_path_components = rel_req_path.split("/");
+  if (request_path_components.length < 3) {
+    res
+      .status(403)
+      .send('error: at least 3 arguments required: "module-load/architecture/modulename"');
+    return;
+  }
+  request_path_components = request_path_components.map((x) => {
+    return decodeURIComponent(x);
+  });
+  const arch = request_path_components[1];
+  if (!(arch in ARCH2MODULEPATH)) {
+    res.status(403).send(`error: invalid architecture: "${arch}"`);
+    return;
+  }
+  // first component is "module-load", second is architecture
+  const modules_no_slashes = request_path_components.slice(2);
+  // can't use '/', so substitute '|'
+  const modules = modules_no_slashes.map((x) => {
+    return x.replace(/\|/, "/");
+  });
+  const setup_and_module_command =
+    `source '${LMOD_PATHS["profile"]}'; ` +
+    `export 'MODULEPATH=${ARCH2MODULEPATH[arch]}'; ` +
+    "module load " +
+    shellQuote.quote(modules);
+  const bash_command = `/bin/bash -c ${shellQuote.quote([setup_and_module_command])} 2>&1`;
+  try {
+    const proc = spawn(bash_command, {
+      encoding: "utf-8",
+      shell: true,
+    });
+    let output = "";
+    proc.stdout.on("data", (data) => {
+      output += data;
+    });
+    proc.on("close", (code) => {
+      res.send(output);
+    });
+    proc.on("error", (e) => {
+      res.send(e.message);
+    });
+  } catch (e) {
+    res.send(e.message);
+  }
+}
+
+function render_file(req, res) {
+  const rel_req_path = get_relative_request_path(req);
+  const absolute_path = relative_path(path.join(BASE_URI, "public", decodeURI(rel_req_path)));
+  try {
+    const content = read_file(absolute_path);
+    res.send(content);
+  } catch (e) {
+    if (e.code != "ENOENT") {
+      res.status(404).send(`no such file or directory: "${absolute_path}"`);
+    } else {
+      res.status(403).send(e.message);
+    }
+  }
+}
+
 const LMOD_PATHS = parse_json_file("./public/lmod-paths.json");
 const ARCH2MODULEPATH = parse_json_file("./public/arch2modulepath.json");
 
@@ -36,108 +149,13 @@ const APP = express();
 
 APP.set("view engine", "ejs");
 APP.get("*", (req, res) => {
-  // this URL mangling is insecure / error prone - since this is a passenger app run as the user,
-  // I'm not worried about exposing files this way
-  var req_path = req.path;
-  req_path = path.normalize(req.path); // no "../../../../" shenanigans
-
-  // strip BASE_URI from the beginning of request, or 403 error
-  if (!req_path.startsWith(BASE_URI)) {
-    const err_msg = `\f
-            invalid request "${req_path}"\n\
-            request should start with "${BASE_URI}"\
-        `;
-    res.status(403).send(err_msg);
-    return;
-  }
-  req_path = req_path.slice(BASE_URI.length);
-  req_path = req_path.replace(/^\/+/, ""); // no leading slashes
-
-  if (req_path == "") {
-    const JSON_LAST_MODIFIED_DATE = get_last_modified_date(relative_path("public/hierarchy.json"));
-    var custom_top = "";
-    try {
-      custom_top = read_file(relative_path("public/custom_top.html"), "utf-8");
-    } catch (e) {
-      // do nothing if ENOENT
-      if (e.code != "ENOENT") {
-        throw e;
-      }
-    }
-    var custom_bottom = "";
-    try {
-      custom_bottom = read_file(relative_path("public/custom_bottom.html"), "utf-8");
-    } catch (e) {
-      // do nothing if ENOENT
-      if (e.code != "ENOENT") {
-        throw e;
-      }
-    }
-    res.render(relative_path("public/index.ejs"), {
-      base: `https://${path.join(req.get("host"), BASE_URI + "/")}`,
-      lastModifiedDate: JSON_LAST_MODIFIED_DATE,
-      custom_top: custom_top,
-      custom_bottom: custom_bottom,
-    });
-  } else if (req_path.startsWith("module-load/")) {
-    // split by slashes and then URL decode
-    var request_path_components = req_path.split("/");
-    if (request_path_components.length < 3) {
-      res
-        .status(403)
-        .send('error: at least 3 arguments required: "module-load/architecture/modulename"');
-      return;
-    }
-    request_path_components = request_path_components.map((x) => {
-      return decodeURIComponent(x);
-    });
-    const arch = request_path_components[1];
-    if (!(arch in ARCH2MODULEPATH)) {
-      res.status(403).send(`error: invalid architecture: "${arch}"`);
-      return;
-    }
-    // first component is "module-load", second is architecture
-    const modules_no_slashes = request_path_components.slice(2);
-    // can't use '/', so substitute '|'
-    const modules = modules_no_slashes.map((x) => {
-      return x.replace(/\|/, "/");
-    });
-    const setup_and_module_command =
-      `source '${LMOD_PATHS["profile"]}'; ` +
-      `export 'MODULEPATH=${ARCH2MODULEPATH[arch]}'; ` +
-      "module load " +
-      shellQuote.quote(modules);
-    const bash_command = `/bin/bash -c ${shellQuote.quote([setup_and_module_command])} 2>&1`;
-    try {
-      const proc = spawn(bash_command, {
-        encoding: "utf-8",
-        shell: true,
-      });
-      let output = "";
-      proc.stdout.on("data", (data) => {
-        output += data;
-      });
-      proc.on("close", (code) => {
-        res.send(output);
-      });
-      proc.on("error", (e) => {
-        res.send(e.message);
-      });
-    } catch (e) {
-      res.send(e.message);
-    }
+  const rel_req_path = get_relative_request_path(req, res);
+  if (rel_req_path == "") {
+    render_default_page(req, res);
+  } else if (rel_req_path.startsWith("module-load/")) {
+    render_module_load(req, res);
   } else {
-    const absolute_path = relative_path(path.join(BASE_URI, "public", decodeURI(req_path)));
-    try {
-      const content = read_file(absolute_path);
-      res.send(content);
-    } catch (e) {
-      if (e.code != "ENOENT") {
-        res.status(404).send(`no such file or directory: "${absolute_path}"`);
-      } else {
-        res.status(403).send(e.message);
-      }
-    }
+    render_file(req, res);
   }
 });
 
