@@ -4,6 +4,7 @@
 
 const fs = require("fs");
 const ejs = require("ejs");
+const util = require("util");
 const path = require("path");
 const express = require("express");
 const { spawn } = require("child_process");
@@ -17,11 +18,6 @@ function relative_path(_path) {
 
 function read_file(_path, encoding = "utf-8") {
   return fs.readFileSync(_path, encoding, { flag: "r" });
-}
-
-function get_last_modified_date(_path) {
-  const stats = fs.statSync(_path);
-  return stats.mtime;
 }
 
 function parse_json_file(...args) {
@@ -50,7 +46,6 @@ function get_relative_request_path(req, res) {
 }
 
 function render_default_page(req, res) {
-  const JSON_LAST_MODIFIED_DATE = get_last_modified_date(relative_path("public/hierarchy.json"));
   var custom_top = "";
   try {
     custom_top = read_file(relative_path("public/custom_top.html"), "utf-8");
@@ -71,7 +66,6 @@ function render_default_page(req, res) {
   }
   res.render(relative_path("public/index.ejs"), {
     base: `https://${path.join(req.get("host"), BASE_URI + "/")}`,
-    lastModifiedDate: JSON_LAST_MODIFIED_DATE,
     custom_top: custom_top,
     custom_bottom: custom_bottom,
   });
@@ -104,6 +98,7 @@ function render_module_load(req, res) {
   const setup_and_module_command =
     `source '${LMOD_PATHS["profile"]}'; ` +
     `export 'MODULEPATH=${ARCH2MODULEPATH[arch]}'; ` +
+    `export LMOD_CACHED_LOADS=yes; ` +
     "module load " +
     shellQuote.quote(modules);
   const bash_command = `/bin/bash -c ${shellQuote.quote([setup_and_module_command])} 2>&1`;
@@ -124,6 +119,16 @@ function render_module_load(req, res) {
     });
   } catch (e) {
     res.send(e.message);
+  }
+}
+
+async function render_mtime(req, res) {
+  try {
+    const stat2 = util.promisify(fs.stat);
+    const stats = await stat2(relative_path("public/hierarchy.json"));
+    res.send(stats.mtime.getTime().toString());
+  } catch (e) {
+    res.status(500).send(e.message);
   }
 }
 
@@ -150,6 +155,8 @@ APP.get("*", (req, res) => {
     render_default_page(req, res);
   } else if (rel_req_path.startsWith("module-load/")) {
     render_module_load(req, res);
+  } else if (rel_req_path == "get-mtime") {
+    render_mtime(req, res);
   } else {
     render_file(req, res);
   }

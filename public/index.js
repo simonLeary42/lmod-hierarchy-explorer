@@ -16,6 +16,7 @@ var ARCH2MODULEPATH = {};
 var TREE_ORIG = {};
 var TREE_HIDDEN_ORIG = {};
 var DIRECTORY_PREREQS = {};
+var MTIME = 0;
 
 // used in update_command_output() to enforce a maximum of one running command
 var previous_abort_controller = null;
@@ -233,11 +234,32 @@ async function fetch_and_parse_json(url) {
   return JSON.parse(content);
 }
 
+function human_readable_datetime(seconds_since_epoch) {
+  const datetime = new Date(seconds_since_epoch);
+  const now = new Date();
+  const diff = now - datetime;
+
+  const msInSecond = 1000;
+  const msInMinute = msInSecond * 60;
+  const msInHour = msInMinute * 60;
+  const msInDay = msInHour * 24;
+
+  const days = Math.floor(diff / msInDay);
+  const hours = Math.floor((diff % msInDay) / msInHour);
+  const minutes = Math.floor((diff % msInHour) / msInMinute);
+  const seconds = Math.floor((diff % msInMinute) / msInSecond);
+
+  return `${days} days, ${hours} hours, ${minutes} minutes, ${seconds} seconds ago`;
+}
+
 async function main() {
   ARCH2MODULEPATH = await fetch_and_parse_json(`${document.baseURI}/arch2modulepath.json`);
   TREE_ORIG = await fetch_and_parse_json(`${document.baseURI}/hierarchy.json`);
   TREE_HIDDEN_ORIG = await fetch_and_parse_json(`${document.baseURI}/hidden-hierarchy.json`);
   DIRECTORY_PREREQS = await fetch_and_parse_json(`${document.baseURI}/directory-prereqs.json`);
+  MTIME = await fetch_and_parse_json(`${document.baseURI}/get-mtime`);
+
+  document.querySelector("#last-updated").textContent = human_readable_datetime(parseInt(MTIME));
 
   update_trees(make_names_strong(TREE_ORIG), make_names_strong(TREE_HIDDEN_ORIG));
 
