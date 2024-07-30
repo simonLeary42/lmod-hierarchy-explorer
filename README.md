@@ -68,6 +68,10 @@ This is a dictionary where the key is a CPU architecture (example: `uname -m`) a
 ./make-json.py
 ```
 
+### configure `public/{custom_top.html,custom_bottom.html,custom.css}`
+
+These files have the Unity header / footer by default, but you will want to replace them with your own HTML/CSS.
+
 ### notes
 
 you may also have to [add the app to your OOD dashboard layout](https://osc.github.io/ood-documentation/release-2.0/customization.html#control-which-apps-appear-in-the-dashboard-navbar), but after version 3.0 this won't be necessary
