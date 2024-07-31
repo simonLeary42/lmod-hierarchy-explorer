@@ -239,7 +239,7 @@ async function fetch_and_parse_json(url) {
   return JSON.parse(content);
 }
 
-function human_readable_datetime(seconds_since_epoch) {
+function time_since(seconds_since_epoch) {
   const datetime = new Date(seconds_since_epoch);
   const now = new Date();
   const diff = now - datetime;
@@ -265,7 +265,7 @@ async function main() {
   // the backend actually returns an integer here, but JSON.parse doesn't seem to care
   MTIME = await fetch_and_parse_json(`${document.baseURI}/get-mtime`);
 
-  last_updated_span.textContent = human_readable_datetime(parseInt(MTIME));
+  last_updated_span.textContent = time_since(parseInt(MTIME));
 
   update_trees(make_names_strong(TREE_ORIG), make_names_strong(TREE_HIDDEN_ORIG));
 
