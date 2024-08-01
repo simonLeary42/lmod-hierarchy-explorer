@@ -1,0 +1,74 @@
+/*
+this is a bastardization of the original jsonTree which tries to hide the fact that it's json
+*/
+.jsontree_tree {
+  margin-left: 0px;
+}
+.jsontree_child-nodes {
+  margin-left: 15px; /* this covers up expand button position left: -15px*/
+}
+/* column grid: */
+.jsontree_node_expanded
+  > .jsontree_value-wrapper
+  > .jsontree_value
+  > .jsontree_child-nodes.jsontree_leaf-nodes {
+  -moz-column-count: auto;
+  -webkit-column-count: auto;
+  column-count: auto;
+  -moz-column-width: 250px;
+  -webkit-column-width: 250px;
+  column-width: 250px; /* this is totally specific to the data that I'm displaying*/
+}
+.jsontree_node_expanded
+  > .jsontree_value-wrapper
+  > .jsontree_value
+  > .jsontree_child-nodes.jsontree_leaf-nodes {
+  list-style: circle;
+}
+.jsontree_node_expanded
+  > .jsontree_value-wrapper
+  > .jsontree_value
+  > .jsontree_child-nodes.jsontree_leaf-nodes
+  > .jsontree_node {
+  margin-right: 10px; /* don't come too close to the bullet point on your right side */
+}
+.jsontree_value-wrapper {
+  overflow-wrap: anywhere;
+}
+/* override type colors */
+.jsontree_value_null,
+.jsontree_value_string,
+.jsontree_value_number,
+.jsontree_value_boolean {
+  font-weight: normal;
+}
+.jsontree_value {
+  color: #000;
+}
+.jsontree_expand-button {
+  top: 6px;
+}
+ul {
+  list-style-type: none;
+}
+ul.jsontree_tree {
+  padding-inline-start: 0px;
+}
+ul.jsontree_child-nodes {
+  padding-inline-start: 0px;
+}
+/* don't dislpay array indexes (or the ":" that follows the index) */
+.jsontree_value_array .jsontree_child-nodes .jsontree_node .jsontree_label-wrapper .jsontree_label {
+  display: none;
+}
+.jsontree_value_array
+  .jsontree_child-nodes
+  .jsontree_node
+  .jsontree_label-wrapper
+  .jsontree_label_value_separator {
+  display: none;
+}
+/* don't display commas */
+.jsontree_value-wrapper .comma {
+  display: none;
+}

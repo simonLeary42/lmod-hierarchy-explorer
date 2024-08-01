@@ -11,44 +11,19 @@
 }
 /* Styles for the container of the tree (e.g. fonts, margins etc.) */
 .jsontree_tree {
-  margin-left: 0px;
-  /* font-family: "PT Mono", monospace; */
+  margin-left: 30px;
+  font-family: "PT Mono", monospace;
   font-size: 14px;
   line-height: 2;
 }
 /* Styles for a list of child nodes */
 .jsontree_child-nodes {
   display: none;
+  margin-left: 35px;
   margin-bottom: 5px;
-  margin-left: 15px; /* this covers up expand button position left: -15px*/
 }
 .jsontree_node_expanded > .jsontree_value-wrapper > .jsontree_value > .jsontree_child-nodes {
   display: block;
-}
-/* column grid: */
-.jsontree_node_expanded
-  > .jsontree_value-wrapper
-  > .jsontree_value
-  > .jsontree_child-nodes.jsontree_leaf-nodes {
-  -moz-column-count: auto;
-  -webkit-column-count: auto;
-  column-count: auto;
-  -moz-column-width: 250px;
-  -webkit-column-width: 250px;
-  column-width: 250px; /* this is totally specific to the data that I'm displaying*/
-}
-.jsontree_node_expanded
-  > .jsontree_value-wrapper
-  > .jsontree_value
-  > .jsontree_child-nodes.jsontree_leaf-nodes {
-  list-style: circle;
-}
-.jsontree_node_expanded
-  > .jsontree_value-wrapper
-  > .jsontree_value
-  > .jsontree_child-nodes.jsontree_leaf-nodes
-  > .jsontree_node {
-  margin-right: 10px; /* don't come too close to the bullet point on your right side */
 }
 /* Styles for labels */
 .jsontree_label-wrapper {
@@ -73,7 +48,7 @@
 /* Styles for values */
 .jsontree_value-wrapper {
   display: block;
-  overflow-wrap: anywhere;
+  overflow: hidden;
 }
 .jsontree_node_complex > .jsontree_value-wrapper {
   overflow: inherit;
@@ -81,17 +56,32 @@
 .jsontree_value {
   vertical-align: top;
   display: inline;
-  color: #000;
+}
+.jsontree_value_null {
+  color: #777;
+  font-weight: bold;
+}
+.jsontree_value_string {
+  color: #025900;
+  font-weight: bold;
+}
+.jsontree_value_number {
+  color: #000e59;
+  font-weight: bold;
+}
+.jsontree_value_boolean {
+  color: #600100;
+  font-weight: bold;
 }
 /* Styles for active elements */
 .jsontree_expand-button {
   position: absolute;
-  top: 6px;
+  top: 3px;
   left: -15px;
   display: block;
   width: 11px;
   height: 11px;
-  background-image: url("icons.svg");
+  background-image: url("jsonTree-expand-collapse-icons.svg");
 }
 .jsontree_node_expanded > .jsontree_label-wrapper > .jsontree_label > .jsontree_expand-button {
   background-position: 0 -11px;
@@ -111,13 +101,4 @@
 }
 .jsontree_node_empty > .jsontree_label-wrapper > .jsontree_label {
   cursor: default !important;
-}
-ul {
-  list-style-type: none;
-}
-ul.jsontree_tree {
-  padding-inline-start: 0px;
-}
-ul.jsontree_child-nodes {
-  padding-inline-start: 0px;
 }
