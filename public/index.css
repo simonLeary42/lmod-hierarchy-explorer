@@ -25,3 +25,7 @@
 .controlpanel {
   margin-bottom: 20px;
 }
+
+.jsontree_leaf-nodes .jsontree_node .jsontree_value-wrapper .jsontree_value .name {
+  font-weight: bold;
+}

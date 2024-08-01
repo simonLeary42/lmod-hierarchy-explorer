@@ -210,7 +210,7 @@ var jsonTree = (function () {
       labelEl = el.querySelector(".jsontree_label");
       labelEl.addEventListener("click", self.toggleMarked.bind(self), false);
     }
-    valueEl = el.querySelector(".jsontree_value");
+    let valueEl = el.querySelector(".jsontree_value");
     valueEl.addEventListener("click", self.toggleMarked.bind(self), false);
   }
   _NodeSimple.prototype = {
@@ -369,7 +369,7 @@ var jsonTree = (function () {
     var self = this,
       el = document.createElement("li"),
       template = function (label, sym) {
-        str =
+        let str =
           '\
                         <div class="jsontree_value-wrapper">\
                             <div class="jsontree_value jsontree_value_' +
@@ -421,21 +421,21 @@ var jsonTree = (function () {
       self.parent = null;
       el.classList.add("jsontree_node_expanded");
       el.classList.add("jsontree_root");
-      line_break_deleteme = el.querySelector(".no_sym0_line_break");
+      let line_break_deleteme = el.querySelector(".no_sym0_line_break");
       line_break_deleteme.parentNode.removeChild(line_break_deleteme);
     }
     self.el = el;
     self.childNodes = childNodes;
     self.childNodesUl = childNodesUl;
-      utils.forEachNode(val, function (label, node, isLast) {
-        self.addChild(new Node(label, node, isLast));
-      });
+    utils.forEachNode(val, function (label, node, isLast) {
+      self.addChild(new Node(label, node, isLast));
+    });
     self.isEmpty = !Boolean(childNodes.length);
     if (self.isEmpty) {
       el.classList.add("jsontree_node_empty");
     } else {
       var all_children_simple = true; // Flag to track if all children are NodeSimple
-      for (childNode of childNodes) {
+      for (const childNode of childNodes) {
         if (childNode.isComplex) {
           all_children_simple = false;
           break;

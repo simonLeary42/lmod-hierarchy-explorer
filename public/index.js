@@ -1,3 +1,12 @@
+/*
+moduleTree: a nested dictionary where the 1st key is architecture, 2nd key is module parent directory,
+  and the value for the second key is a list of modules. Modules take the form of a string:
+  '{name}/{version}' or '<span class="name">{name}</span>/<span class="version">{version}</span>'
+  the <span> version should only be used when passing a moduleTree to jsonTree.loadData().
+
+jsonTree: this is from the jsonTree library. It's the return value from jsonTree.create()
+*/
+
 const MODULE_TREE_DIV = document.getElementById("json-tree-wrapper");
 const MODULE_TREE_HIDDEN_DIV = document.getElementById("json-tree-wrapper-hidden");
 const EXPAND_COLLAPSE_CHECKBOX = document.getElementById("expand_collapse_all");
@@ -14,107 +23,110 @@ var JSONTREE_HIDDEN = jsonTree.create({}, MODULE_TREE_HIDDEN_DIV);
 
 // these are fetched from backend during main()
 var ARCH2MODULEPATH = {};
-var MODULE_TREE_ORIG = {};
-var MODULE_TREE_HIDDEN_ORIG = {};
+var MODULE_TREE_ORIG = null;
+var MODULE_TREE_HIDDEN_ORIG = null;
 var DIRECTORY_PREREQS = {};
 var MTIME = 0;
 
 // used in update_command_output() to enforce a maximum of one running command
 var RUNNING_COMMAND_ABORT_CONTROLLER = null;
 
-function is_object_empty(object) {
-  return Object.keys(object).length === 0;
+// prevent spam while the code is making lots of mutations
+var ENABLE_MUTATION_OBSERVER = true;
+
+function set_checkbox(checkbox, new_value) {
+  const old_value = checkbox.checked;
+  if (old_value != new_value) {
+    checkbox.click();
+  }
 }
 
-function nested_dict_append(_dict, key1, key2, value) {
-  if (!_dict.hasOwnProperty(key1)) {
-    _dict[key1] = {};
-  }
-  if (!_dict[key1].hasOwnProperty(key2)) {
-    _dict[key1][key2] = [];
-  }
-  _dict[key1][key2].push(value);
+function get_trees_root_elems() {
+  /* returns two elements: non-hidden and hidden */
+  return [
+    MODULE_TREE_DIV.querySelector(".jsontree_tree").querySelector(".jsontree_node"),
+    MODULE_TREE_HIDDEN_DIV.querySelector(".jsontree_tree").querySelector(".jsontree_node"),
+  ];
 }
 
-function filter_tree_by_substring(tree, substring) {
-  var filtered_obj = {};
-  for (const [architecture, parent_dir2modules] of Object.entries(tree)) {
-    for (const [parent_dir, modules] of Object.entries(parent_dir2modules)) {
-      modules.forEach((module) => {
-        if (module.toLowerCase().indexOf(substring.toLowerCase()) !== -1) {
-          nested_dict_append(filtered_obj, architecture, parent_dir, module);
-        }
-      });
-    }
-  }
-  return filtered_obj;
+function add_module_node_to_moduleTree(module_node, moduleTree) {
+  const [arch, parent_dir] = get_node_parents_labels(module_node);
+  const module = get_node_value(module_node);
+  moduleTree.add(arch, parent_dir, module);
 }
 
-function make_names_strong(tree) {
-  var output = {};
-  for (const [architecture, parent_dir2modules] of Object.entries(tree)) {
-    for (const [parent_dir, modules] of Object.entries(parent_dir2modules)) {
-      modules.forEach((module) => {
-        module_strong_name = module.replace(/^([^\/]+)\/(.*)/, "<strong>$1</strong>/$2");
-        nested_dict_append(output, architecture, parent_dir, module_strong_name);
-      });
-    }
-  }
-  return output;
+function get_selected_modules() {
+  /* returns two ModuleTrees: non-hidden and hidden */
+  selected_modules = new ModuleTree();
+  selected_modules_hidden = new ModuleTree();
+  const [root, root_hidden] = get_trees_root_elems();
+  const selected_module_nodes = get_marked_leaf_nodes(root);
+  const selected_module_nodes_hidden = get_marked_leaf_nodes(root_hidden);
+  selected_module_nodes.forEach((node) => {
+    add_module_node_to_moduleTree(node, selected_modules);
+  });
+  selected_module_nodes_hidden.forEach((node) => {
+    add_module_node_to_moduleTree(node, selected_modules_hidden);
+  });
+  return [selected_modules, selected_modules_hidden];
+}
+
+function select_module(root, arch, parent_dir, module) {
+  const parent_node = get_deep_child_node_with_labels(root, [arch, parent_dir]);
+  mark_array_node_elements_with_value(parent_node, module);
 }
 
 function filter_module_trees(substr) {
+  /* overwrite the module trees with a filtered version of themselves, containing only module names
+  that exactly contain the substring. Any previously selected modules are also included in the
+  filtered output. the update_command logic counts marked elements on screen, so previously
+  selected modules need to stay on screen. */
+  var new_ModuleTree = null;
+  var new_ModuleTree_hiddden = null;
   if (substr == "") {
-    overwrite_jsonTrees(
-      make_names_strong(MODULE_TREE_ORIG),
-      make_names_strong(MODULE_TREE_HIDDEN_ORIG)
-    );
-    // if we're going back to full unfiltered output, collapse
-    if (EXPAND_COLLAPSE_CHECKBOX.checked) {
-      EXPAND_COLLAPSE_CHECKBOX.click();
-    }
-    return;
+    new_ModuleTree = MODULE_TREE_ORIG;
+    new_ModuleTree_hiddden = MODULE_TREE_HIDDEN_ORIG;
+  } else {
+    new_ModuleTree = MODULE_TREE_ORIG.filter_substring(substr);
+    new_ModuleTree_hiddden = MODULE_TREE_HIDDEN_ORIG.filter_substring(substr);
   }
-  new_ModuleTree = filter_tree_by_substring(MODULE_TREE_ORIG, substr);
-  new_ModuleTree_hidden = filter_tree_by_substring(MODULE_TREE_HIDDEN_ORIG, substr);
-  if (is_object_empty(new_ModuleTree) && is_object_empty(new_ModuleTree_hidden)) {
+
+  if (new_ModuleTree.is_empty() && new_ModuleTree_hiddden.is_empty()) {
     alert("no modules found.");
     return;
   }
-  overwrite_jsonTrees(make_names_strong(new_ModuleTree), make_names_strong(new_ModuleTree_hidden));
-  if (!EXPAND_COLLAPSE_CHECKBOX.checked) {
-    EXPAND_COLLAPSE_CHECKBOX.click();
+
+  // make sure any previously selected modules are still present after filtering
+  const [selected_ModuleTree, selected_ModuleTree_hidden] = get_selected_modules();
+  new_ModuleTree.update(selected_ModuleTree);
+  new_ModuleTree_hiddden.update(selected_ModuleTree_hidden);
+
+  overwrite_jsonTrees(new_ModuleTree, new_ModuleTree_hiddden);
+
+  // re-select previously selected modules
+  ENABLE_MUTATION_OBSERVER = false; // prevent backend spam
+  const [root, root_hidden] = get_trees_root_elems();
+  selected_ModuleTree.foreach_module((architecture, parent_dir, module) => {
+    select_module(root, architecture, parent_dir, module);
+  });
+  selected_ModuleTree_hidden.foreach_module((architecture, parent_dir, module) => {
+    select_module(root_hidden, architecture, parent_dir, module);
+  });
+  ENABLE_MUTATION_OBSERVER = true;
+  update_command_and_output();
+
+  if (substr == "") {
+    // if we're going back to full unfiltered output, collapse
+    set_checkbox(EXPAND_COLLAPSE_CHECKBOX, false);
+  } else {
+    // always expand after filtering
+    set_checkbox(EXPAND_COLLAPSE_CHECKBOX, true);
   }
+
   // if the only results are hidden modules section, make sure that section is visible
-  if (
-    is_object_empty(new_ModuleTree) &&
-    !is_object_empty(new_ModuleTree_hidden) &&
-    !SHOW_HIDDEN_CHECKBOX.checked
-  ) {
-    SHOW_HIDDEN_CHECKBOX.click();
+  if (new_ModuleTree.is_empty() && !new_ModuleTree_hiddden.is_empty()) {
+    set_checkbox(SHOW_HIDDEN_CHECKBOX, true);
   }
-}
-
-function get_module_directory(module_jsontree_node) {
-  return module_jsontree_node.parentNode
-    .closest(".jsontree_node")
-    .querySelector(".jsontree_label-wrapper")
-    .querySelector(".jsontree_label").textContent;
-}
-
-function get_module_arch(module_jsontree_node) {
-  return module_jsontree_node.parentNode
-    .closest(".jsontree_node")
-    .parentNode.closest(".jsontree_node")
-    .querySelector(".jsontree_label-wrapper")
-    .querySelector(".jsontree_label").textContent;
-}
-
-function get_module_name_version(module_jsontree_node) {
-  // .textContent automatically removes the <strong></strong>
-  return module_jsontree_node
-    .querySelector(".jsontree_value-wrapper")
-    .querySelector(".jsontree_value").textContent;
 }
 
 function abort_command_if_running() {
@@ -124,6 +136,7 @@ function abort_command_if_running() {
 }
 
 async function update_command_output(modules, arch) {
+  /* execute command via backend */
   abort_command_if_running();
   RUNNING_COMMAND_ABORT_CONTROLLER = new AbortController();
   const { signal } = RUNNING_COMMAND_ABORT_CONTROLLER;
@@ -136,7 +149,7 @@ async function update_command_output(modules, arch) {
     return x.replace(/\//, "|");
   });
 
-  args = [arch].concat(modules_no_slashes);
+  const args = [arch].concat(modules_no_slashes);
   // document.baseURI may end in a slash, but double slashes doesn't break the backend
   const fetch_url = encodeURI(document.baseURI + "/module-load/" + args.join("/"));
   try {
@@ -144,7 +157,7 @@ async function update_command_output(modules, arch) {
     if (!response.ok) {
       // FIXME this makes "Object[response]", useful error is in response.text
       console.error(`bad fetch response: ${response}`);
-      COMMAND_OUTPUT_CODEBLOCK.textContent = "(fetch error, See console)";
+      COMMAND_OUTPUT_CODEBLOCK.textContent = "(fetch error, see console)";
       return;
     }
     const content = await response.text();
@@ -154,49 +167,55 @@ async function update_command_output(modules, arch) {
       console.log(`fetch aborted: \"${fetch_url}\"`);
     } else {
       console.error(`fetch error: ${error}`);
-      COMMAND_OUTPUT_CODEBLOCK.textContent = "(fetch error, See console)";
+      COMMAND_OUTPUT_CODEBLOCK.textContent = "(fetch error, see console)";
     }
   }
 }
 
 function update_command(modules) {
+  /* display a command suitable to be copy pasted into user's shell */
   const command = ["module", "load"].concat(modules).join(" ");
   COMMAND_CODEBLOCK.textContent = command;
 }
 
 function update_command_and_output() {
-  marked_nodes = document.querySelectorAll(".jsontree_node_marked");
-  if (marked_nodes.length == 0) {
+  /* find all selected HTML elements, convert to ModuleTree, error check, then build a list of
+  module names to load including the directory prerequisites for those modules' parent
+  directories */
+  const [selected_ModuleTree, selected_ModuleTree_hidden] = get_selected_modules();
+  var all_selected_ModuleTree = new ModuleTree();
+  all_selected_ModuleTree.update(selected_ModuleTree);
+  all_selected_ModuleTree.update(selected_ModuleTree_hidden);
+  if (all_selected_ModuleTree.is_empty()) {
     overwrite_command_and_output(`(no modules selected)`);
     return;
   }
-  var architectures = [];
+
+  // FIXME "noarch" is compatible with the other architectures, but backend only supports one
+  // architecture. if we include noarch directory in MODULEPATH for other architectures,
+  // then there would be duplicates in the tree. I could make separate arch2modulepath
+  // definitions for make-json and backend, but I don't want to. */
+  if (all_selected_ModuleTree.architectures().length > 1) {
+    overwrite_command_and_output(
+      `( error: incompatible architectures: ${JSON.stringify(architectures)} )`
+    );
+    return;
+  }
+  const arch = all_selected_ModuleTree.architectures()[0];
+
   var modules = [];
-  marked_nodes.forEach((marked_node) => {
-    // if this module directory has any prerequisite modules, add those modules to the command
-    parent_dir = get_module_directory(marked_node);
-    if (parent_dir in DIRECTORY_PREREQS) {
+  all_selected_ModuleTree.foreach_module((architecture, parent_dir, module) => {
+    if (DIRECTORY_PREREQS.hasOwnProperty(parent_dir)) {
       DIRECTORY_PREREQS[parent_dir].forEach((prereq) => {
         if (!modules.includes(prereq)) {
           modules.push(prereq);
         }
       });
     }
-    modules.push(get_module_name_version(marked_node));
-    arch = get_module_arch(marked_node);
-    if (!architectures.includes(arch)) {
-      architectures.push(arch);
+    if (!modules.includes(module)) {
+      modules.push(module);
     }
   });
-  // FIXME "noarch" is compatible with the other architectures, so checking length > 1
-  // isn't good enough
-  if (architectures.length > 1) {
-    overwrite_command_and_output(
-      `( error: incompatible architectures: ${JSON.stringify(architectures)} )`
-    );
-    return;
-  }
-  arch = architectures[0];
   update_command(modules);
   update_command_output(modules, arch);
 }
@@ -208,9 +227,10 @@ function overwrite_command_and_output(x) {
 }
 
 function clear_selected_modules() {
-  document.querySelectorAll(".jsontree_node_marked").forEach((x) => {
-    x.classList.remove("jsontree_node_marked");
-  });
+  const [root, root_hidden] = get_trees_root_elems();
+  unmark_all_child_nodes(root);
+  unmark_all_child_nodes(root_hidden);
+  update_command_and_output();
 }
 
 function update_expanded_or_collapsed() {
@@ -224,10 +244,9 @@ function update_expanded_or_collapsed() {
 }
 
 function overwrite_jsonTrees(main_ModuleTree, hidden_ModuleTree) {
-  // selection is cleared regardless, but this way my MutationObserver is properly activated
-  clear_selected_modules();
-  JSONTREE.loadData(main_ModuleTree);
-  JSONTREE_HIDDEN.loadData(hidden_ModuleTree);
+  /* also formats each ModuleTree */
+  JSONTREE.loadData(main_ModuleTree.format());
+  JSONTREE_HIDDEN.loadData(hidden_ModuleTree.format());
   // automatically collapsed after loadData
   update_expanded_or_collapsed();
 }
@@ -262,18 +281,19 @@ function time_since(seconds_since_epoch) {
 
 async function main() {
   ARCH2MODULEPATH = await fetch_and_parse_json(`${document.baseURI}/arch2modulepath.json`);
-  MODULE_TREE_ORIG = await fetch_and_parse_json(`${document.baseURI}/hierarchy.json`);
-  MODULE_TREE_HIDDEN_ORIG = await fetch_and_parse_json(`${document.baseURI}/hidden-hierarchy.json`);
+  MODULE_TREE_ORIG = new ModuleTree(
+    await fetch_and_parse_json(`${document.baseURI}/hierarchy.json`)
+  );
+  MODULE_TREE_HIDDEN_ORIG = new ModuleTree(
+    await fetch_and_parse_json(`${document.baseURI}/hidden-hierarchy.json`)
+  );
   DIRECTORY_PREREQS = await fetch_and_parse_json(`${document.baseURI}/directory-prereqs.json`);
   // the backend actually returns an integer here, but JSON.parse doesn't seem to care
   MTIME = await fetch_and_parse_json(`${document.baseURI}/get-mtime`);
 
   LAST_UPDATED_SPAN.textContent = time_since(parseInt(MTIME));
 
-  overwrite_jsonTrees(
-    make_names_strong(MODULE_TREE_ORIG),
-    make_names_strong(MODULE_TREE_HIDDEN_ORIG)
-  );
+  overwrite_jsonTrees(MODULE_TREE_ORIG, MODULE_TREE_HIDDEN_ORIG);
 
   EXPAND_COLLAPSE_CHECKBOX.addEventListener("change", update_expanded_or_collapsed);
   CLEAR_SELECTION_BUTTON.addEventListener("click", clear_selected_modules);
@@ -286,6 +306,9 @@ async function main() {
   });
 
   const observer = new MutationObserver((mutations) => {
+    if (!ENABLE_MUTATION_OBSERVER) {
+      return;
+    }
     mutations.forEach((mutation) => {
       if (
         mutation.type === "attributes" &&
