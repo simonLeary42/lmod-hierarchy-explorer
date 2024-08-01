@@ -1,26 +1,26 @@
-const module_tree_wrapper = document.getElementById("json-tree-wrapper");
-const module_hidden_tree_wrapper = document.getElementById("json-tree-wrapper-hidden");
-const expand_collapse_box = document.getElementById("expand_collapse_all");
-const show_hidden_box = document.getElementById("show_hidden");
-const module_load_command_codeblock = document.getElementById("module_load_command");
-const module_load_command_output_codeblock = document.getElementById("module_load_command_output");
-const clear_selected_modules_button = document.getElementById("clear_selected_modules");
-const search_form = document.getElementById("search_form");
-const search_form_textbox = document.getElementById("search_form_textbox");
-const last_updated_span = document.getElementById("last-updated");
+const MODULE_TREE_DIV = document.getElementById("json-tree-wrapper");
+const MODULE_TREE_HIDDEN_DIV = document.getElementById("json-tree-wrapper-hidden");
+const EXPAND_COLLAPSE_CHECKBOX = document.getElementById("expand_collapse_all");
+const SHOW_HIDDEN_CHECKBOX = document.getElementById("show_hidden");
+const COMMAND_CODEBLOCK = document.getElementById("module_load_command");
+const COMMAND_OUTPUT_CODEBLOCK = document.getElementById("module_load_command_output");
+const CLEAR_SELECTION_BUTTON = document.getElementById("clear_selected_modules");
+const SEARCH_FORM = document.getElementById("search_form");
+const SEARCH_FORM_TEXTBOX = document.getElementById("search_form_textbox");
+const LAST_UPDATED_SPAN = document.getElementById("last-updated");
 
-var tree = jsonTree.create({}, module_tree_wrapper);
-var tree_hidden = jsonTree.create({}, module_hidden_tree_wrapper);
+var JSONTREE = jsonTree.create({}, MODULE_TREE_DIV);
+var JSONTREE_HIDDEN = jsonTree.create({}, MODULE_TREE_HIDDEN_DIV);
 
 // these are fetched from backend during main()
 var ARCH2MODULEPATH = {};
-var TREE_ORIG = {};
-var TREE_HIDDEN_ORIG = {};
+var MODULE_TREE_ORIG = {};
+var MODULE_TREE_HIDDEN_ORIG = {};
 var DIRECTORY_PREREQS = {};
 var MTIME = 0;
 
 // used in update_command_output() to enforce a maximum of one running command
-var previous_abort_controller = null;
+var RUNNING_COMMAND_ABORT_CONTROLLER = null;
 
 function is_object_empty(object) {
   return Object.keys(object).length === 0;
@@ -65,30 +65,30 @@ function make_names_strong(tree) {
 
 function filter_module_trees(substr) {
   if (substr == "") {
-    update_trees(make_names_strong(TREE_ORIG), make_names_strong(TREE_HIDDEN_ORIG));
+    update_trees(make_names_strong(MODULE_TREE_ORIG), make_names_strong(MODULE_TREE_HIDDEN_ORIG));
     // if we're going back to full unfiltered output, collapse
-    if (expand_collapse_box.checked) {
-      expand_collapse_box.click();
+    if (EXPAND_COLLAPSE_CHECKBOX.checked) {
+      EXPAND_COLLAPSE_CHECKBOX.click();
     }
     return;
   }
-  filtered_tree = filter_tree_by_substring(TREE_ORIG, substr);
-  filtered_tree_hidden = filter_tree_by_substring(TREE_HIDDEN_ORIG, substr);
-  if (is_object_empty(filtered_tree) && is_object_empty(filtered_tree_hidden)) {
+  new_ModuleTree = filter_tree_by_substring(MODULE_TREE_ORIG, substr);
+  new_ModuleTree_hidden = filter_tree_by_substring(MODULE_TREE_HIDDEN_ORIG, substr);
+  if (is_object_empty(new_ModuleTree) && is_object_empty(new_ModuleTree_hidden)) {
     alert("no modules found.");
     return;
   }
-  update_trees(make_names_strong(filtered_tree), make_names_strong(filtered_tree_hidden));
-  if (!expand_collapse_box.checked) {
-    expand_collapse_box.click();
+  update_trees(make_names_strong(new_ModuleTree), make_names_strong(new_ModuleTree_hidden));
+  if (!EXPAND_COLLAPSE_CHECKBOX.checked) {
+    EXPAND_COLLAPSE_CHECKBOX.click();
   }
   // if the only results are hidden modules section, make sure that section is visible
   if (
-    is_object_empty(filtered_tree) &&
-    !is_object_empty(filtered_tree_hidden) &&
-    !show_hidden_box.checked
+    is_object_empty(new_ModuleTree) &&
+    !is_object_empty(new_ModuleTree_hidden) &&
+    !SHOW_HIDDEN_CHECKBOX.checked
   ) {
-    show_hidden_box.click();
+    SHOW_HIDDEN_CHECKBOX.click();
   }
 }
 
@@ -115,17 +115,17 @@ function get_module_name_version(module_jsontree_node) {
 }
 
 function abort_command_if_running() {
-  if (previous_abort_controller) {
-    previous_abort_controller.abort();
+  if (RUNNING_COMMAND_ABORT_CONTROLLER) {
+    RUNNING_COMMAND_ABORT_CONTROLLER.abort();
   }
 }
 
 async function update_command_output(modules, arch) {
   abort_command_if_running();
-  previous_abort_controller = new AbortController();
-  const { signal } = previous_abort_controller;
+  RUNNING_COMMAND_ABORT_CONTROLLER = new AbortController();
+  const { signal } = RUNNING_COMMAND_ABORT_CONTROLLER;
 
-  module_load_command_output_codeblock.textContent = "(command in progress...)";
+  COMMAND_OUTPUT_CODEBLOCK.textContent = "(command in progress...)";
 
   // can't use slashes in a URL, and OOD doesn't like URL encoded slashes
   // backend replaces '|' with '/'
@@ -141,24 +141,24 @@ async function update_command_output(modules, arch) {
     if (!response.ok) {
       // FIXME this makes "Object[response]", useful error is in response.text
       console.error(`bad fetch response: ${response}`);
-      module_load_command_output_codeblock.textContent = "(fetch error, See console)";
+      COMMAND_OUTPUT_CODEBLOCK.textContent = "(fetch error, See console)";
       return;
     }
     const content = await response.text();
-    module_load_command_output_codeblock.textContent = content;
+    COMMAND_OUTPUT_CODEBLOCK.textContent = content;
   } catch (error) {
     if (error.name === "AbortError") {
       console.log(`fetch aborted: \"${fetch_url}\"`);
     } else {
       console.error(`fetch error: ${error}`);
-      module_load_command_output_codeblock.textContent = "(fetch error, See console)";
+      COMMAND_OUTPUT_CODEBLOCK.textContent = "(fetch error, See console)";
     }
   }
 }
 
 function update_command(modules) {
   const command = ["module", "load"].concat(modules).join(" ");
-  module_load_command_codeblock.textContent = command;
+  COMMAND_CODEBLOCK.textContent = command;
 }
 
 function update_command_and_output() {
@@ -171,9 +171,9 @@ function update_command_and_output() {
   var modules = [];
   marked_nodes.forEach((marked_node) => {
     // if this module directory has any prerequisite modules, add those modules to the command
-    _directory = get_module_directory(marked_node);
-    if (_directory in DIRECTORY_PREREQS) {
-      DIRECTORY_PREREQS[_directory].forEach((prereq) => {
+    parent_dir = get_module_directory(marked_node);
+    if (parent_dir in DIRECTORY_PREREQS) {
+      DIRECTORY_PREREQS[parent_dir].forEach((prereq) => {
         if (!modules.includes(prereq)) {
           modules.push(prereq);
         }
@@ -200,8 +200,8 @@ function update_command_and_output() {
 
 function overwrite_command_and_output(x) {
   abort_command_if_running(); // running command would later overwrite textContent
-  module_load_command_codeblock.textContent = x;
-  module_load_command_output_codeblock.textContent = x;
+  COMMAND_CODEBLOCK.textContent = x;
+  COMMAND_OUTPUT_CODEBLOCK.textContent = x;
 }
 
 function clear_selected_modules() {
@@ -211,20 +211,20 @@ function clear_selected_modules() {
 }
 
 function update_expanded_or_collapsed() {
-  if (!!expand_collapse_box.checked) {
-    tree.expand();
-    tree_hidden.expand();
+  if (!!EXPAND_COLLAPSE_CHECKBOX.checked) {
+    JSONTREE.expand();
+    JSONTREE_HIDDEN.expand();
   } else {
-    tree.collapse();
-    tree_hidden.collapse();
+    JSONTREE.collapse();
+    JSONTREE_HIDDEN.collapse();
   }
 }
 
-function update_trees(data, data_hidden) {
+function update_trees(main_ModuleTree, hidden_ModuleTree) {
   // selection is cleared regardless, but this way my MutationObserver is properly activated
   clear_selected_modules();
-  tree.loadData(data);
-  tree_hidden.loadData(data_hidden);
+  JSONTREE.loadData(main_ModuleTree);
+  JSONTREE_HIDDEN.loadData(hidden_ModuleTree);
   // automatically collapsed after loadData
   update_expanded_or_collapsed();
 }
@@ -259,24 +259,24 @@ function time_since(seconds_since_epoch) {
 
 async function main() {
   ARCH2MODULEPATH = await fetch_and_parse_json(`${document.baseURI}/arch2modulepath.json`);
-  TREE_ORIG = await fetch_and_parse_json(`${document.baseURI}/hierarchy.json`);
-  TREE_HIDDEN_ORIG = await fetch_and_parse_json(`${document.baseURI}/hidden-hierarchy.json`);
+  MODULE_TREE_ORIG = await fetch_and_parse_json(`${document.baseURI}/hierarchy.json`);
+  MODULE_TREE_HIDDEN_ORIG = await fetch_and_parse_json(`${document.baseURI}/hidden-hierarchy.json`);
   DIRECTORY_PREREQS = await fetch_and_parse_json(`${document.baseURI}/directory-prereqs.json`);
   // the backend actually returns an integer here, but JSON.parse doesn't seem to care
   MTIME = await fetch_and_parse_json(`${document.baseURI}/get-mtime`);
 
-  last_updated_span.textContent = time_since(parseInt(MTIME));
+  LAST_UPDATED_SPAN.textContent = time_since(parseInt(MTIME));
 
-  update_trees(make_names_strong(TREE_ORIG), make_names_strong(TREE_HIDDEN_ORIG));
+  update_trees(make_names_strong(MODULE_TREE_ORIG), make_names_strong(MODULE_TREE_HIDDEN_ORIG));
 
-  expand_collapse_box.addEventListener("change", update_expanded_or_collapsed);
-  clear_selected_modules_button.addEventListener("click", clear_selected_modules);
-  show_hidden_box.addEventListener("change", function () {
-    module_hidden_tree_wrapper.classList.toggle("display_none");
+  EXPAND_COLLAPSE_CHECKBOX.addEventListener("change", update_expanded_or_collapsed);
+  CLEAR_SELECTION_BUTTON.addEventListener("click", clear_selected_modules);
+  SHOW_HIDDEN_CHECKBOX.addEventListener("change", function () {
+    MODULE_TREE_HIDDEN_DIV.classList.toggle("display_none");
   });
-  search_form.addEventListener("submit", function (event) {
+  SEARCH_FORM.addEventListener("submit", function (event) {
     event.preventDefault(); // Prevent form submission
-    filter_module_trees(search_form_textbox.value);
+    filter_module_trees(SEARCH_FORM_TEXTBOX.value);
   });
 
   const observer = new MutationObserver((mutations) => {
