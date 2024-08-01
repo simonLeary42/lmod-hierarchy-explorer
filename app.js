@@ -101,6 +101,7 @@ function send_module_load(req, res) {
     `export 'LMOD_RC=${LMOD_PATHS["lmodrc"]}'; ` +
     `export 'MODULEPATH=${ARCH2MODULEPATH[arch]}'; ` +
     `export LMOD_CACHED_LOADS=yes; ` +
+    `export LMOD_DISABLE_SAME_NAME_AUTOSWAP=yes; ` +
     "module load " +
     shellQuote.quote(modules);
   const bash_command = `/bin/bash -c ${shellQuote.quote([setup_and_module_command])} 2>&1`;
