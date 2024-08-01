@@ -65,7 +65,10 @@ function make_names_strong(tree) {
 
 function filter_module_trees(substr) {
   if (substr == "") {
-    update_trees(make_names_strong(MODULE_TREE_ORIG), make_names_strong(MODULE_TREE_HIDDEN_ORIG));
+    overwrite_jsonTrees(
+      make_names_strong(MODULE_TREE_ORIG),
+      make_names_strong(MODULE_TREE_HIDDEN_ORIG)
+    );
     // if we're going back to full unfiltered output, collapse
     if (EXPAND_COLLAPSE_CHECKBOX.checked) {
       EXPAND_COLLAPSE_CHECKBOX.click();
@@ -78,7 +81,7 @@ function filter_module_trees(substr) {
     alert("no modules found.");
     return;
   }
-  update_trees(make_names_strong(new_ModuleTree), make_names_strong(new_ModuleTree_hidden));
+  overwrite_jsonTrees(make_names_strong(new_ModuleTree), make_names_strong(new_ModuleTree_hidden));
   if (!EXPAND_COLLAPSE_CHECKBOX.checked) {
     EXPAND_COLLAPSE_CHECKBOX.click();
   }
@@ -220,7 +223,7 @@ function update_expanded_or_collapsed() {
   }
 }
 
-function update_trees(main_ModuleTree, hidden_ModuleTree) {
+function overwrite_jsonTrees(main_ModuleTree, hidden_ModuleTree) {
   // selection is cleared regardless, but this way my MutationObserver is properly activated
   clear_selected_modules();
   JSONTREE.loadData(main_ModuleTree);
@@ -267,7 +270,10 @@ async function main() {
 
   LAST_UPDATED_SPAN.textContent = time_since(parseInt(MTIME));
 
-  update_trees(make_names_strong(MODULE_TREE_ORIG), make_names_strong(MODULE_TREE_HIDDEN_ORIG));
+  overwrite_jsonTrees(
+    make_names_strong(MODULE_TREE_ORIG),
+    make_names_strong(MODULE_TREE_HIDDEN_ORIG)
+  );
 
   EXPAND_COLLAPSE_CHECKBOX.addEventListener("change", update_expanded_or_collapsed);
   CLEAR_SELECTION_BUTTON.addEventListener("click", clear_selected_modules);
