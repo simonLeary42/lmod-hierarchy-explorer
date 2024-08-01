@@ -141,7 +141,11 @@ function send_file(req, res) {
     const content = read_file(absolute_path);
     res.send(content);
   } catch (e) {
-    res.status(500).send(e.message);
+    if (e.code == "ENOENT") {
+      res.status(404).send(e.message);
+    } else {
+      res.status(500).send(e.message);
+    }
   }
 }
 
