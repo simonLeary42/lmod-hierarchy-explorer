@@ -191,24 +191,14 @@ var jsonTree = (function () {
       labelEl,
       template = function (label, val) {
         var str =
-          '\
-                    <span class="jsontree_value-wrapper">\
-                        <span class="jsontree_value jsontree_value_' +
-          self.type +
-          '">' +
-          val +
+          '<span class="jsontree_label-wrapper">' +
+          `  <span class="jsontree_label">"${label}"</span>` +
+          '  <span class="jsontree_label_value_separator""> : </span>' + // when I move this out of the label wrapper, it renders all wrong
           "</span>" +
+          '<span class="jsontree_value-wrapper">' +
+          `  <span class="jsontree_value jsontree_value_${self.type}">${val}</span>` +
+          `  ${!isLast ? '<span class="comma">,</span>' : ""}` + // when I move this out of the value wrapper, it renders all wrong
           "</span>";
-        if (label !== null) {
-          str =
-            '\
-                    <span class="jsontree_label-wrapper">\
-                        <span class="jsontree_label">' +
-            label +
-            "</span> : \
-                    </span>" +
-            str;
-        }
         return str;
       };
     self.label = label;
@@ -437,16 +427,9 @@ var jsonTree = (function () {
     self.el = el;
     self.childNodes = childNodes;
     self.childNodesUl = childNodesUl;
-    // don't print array index
-    if (this.type == "array") {
-      utils.forEachNode(val, function (label, node, isLast) {
-        self.addChild(new Node(null, node, isLast));
-      });
-    } else {
       utils.forEachNode(val, function (label, node, isLast) {
         self.addChild(new Node(label, node, isLast));
       });
-    }
     self.isEmpty = !Boolean(childNodes.length);
     if (self.isEmpty) {
       el.classList.add("jsontree_node_empty");
