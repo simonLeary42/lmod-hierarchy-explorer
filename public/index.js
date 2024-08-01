@@ -195,13 +195,14 @@ function update_command_and_output() {
   // architecture. if we include noarch directory in MODULEPATH for other architectures,
   // then there would be duplicates in the tree. I could make separate arch2modulepath
   // definitions for make-json and backend, but I don't want to. */
-  if (all_selected_ModuleTree.architectures().length > 1) {
+  const architectures = all_selected_ModuleTree.architectures();
+  if (architectures.length > 1) {
     overwrite_command_and_output(
       `( error: incompatible architectures: ${JSON.stringify(architectures)} )`
     );
     return;
   }
-  const arch = all_selected_ModuleTree.architectures()[0];
+  const arch = architectures[0];
 
   var modules = [];
   all_selected_ModuleTree.foreach_module((architecture, parent_dir, module) => {
