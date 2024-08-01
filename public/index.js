@@ -244,9 +244,8 @@ function update_expanded_or_collapsed() {
 }
 
 function overwrite_jsonTrees(main_ModuleTree, hidden_ModuleTree) {
-  /* also formats each ModuleTree */
-  JSONTREE.loadData(main_ModuleTree.format());
-  JSONTREE_HIDDEN.loadData(hidden_ModuleTree.format());
+  JSONTREE.loadData(main_ModuleTree.export());
+  JSONTREE_HIDDEN.loadData(hidden_ModuleTree.export());
   // automatically collapsed after loadData
   update_expanded_or_collapsed();
 }
