@@ -78,7 +78,11 @@ function send_module_load(req, res) {
   if (request_path_components.length < 3) {
     res
       .status(500)
-      .send('error: at least 3 arguments required: "module-load/architecture/modulename"');
+      .send(
+        `(backend error: at least 3 arguments required: ["module-load", architecture, name_version]. Given: ${JSON.stringify(
+          request_path_components
+        )})`
+      );
     return;
   }
   request_path_components = request_path_components.map((x) => {
@@ -86,7 +90,7 @@ function send_module_load(req, res) {
   });
   const arch = request_path_components[1];
   if (!(arch in ARCH2MODULEPATH)) {
-    res.status(500).send(`error: invalid architecture: "${arch}"`);
+    res.status(500).send(`(backend error: invalid architecture: "${arch}")`);
     return;
   }
   // first component is "module-load", second is architecture
@@ -104,7 +108,7 @@ function send_module_load(req, res) {
     `export LMOD_DISABLE_SAME_NAME_AUTOSWAP=yes; ` +
     "module load " +
     shellQuote.quote(modules);
-  const bash_command = `/bin/bash -c ${shellQuote.quote([setup_and_module_command])} 2>&1`;
+  const bash_command = `env -i bash -c ${shellQuote.quote([setup_and_module_command])} 2>&1`;
   try {
     const proc = spawn(bash_command, {
       encoding: "utf-8",
@@ -128,7 +132,7 @@ function send_module_load(req, res) {
 async function send_mtime(req, res) {
   try {
     const stat2 = util.promisify(fs.stat);
-    const stats = await stat2(relative_path("public/hierarchy.json"));
+    const stats = await stat2(relative_path("public/mfile-layout.json"));
     res.send(stats.mtime.getTime().toString());
   } catch (e) {
     res.status(500).send(e.message);
