@@ -1,4 +1,7 @@
+# [ARCHIVE: repository moved to UMass-RC](https://github.com/UMass-RC/lmod-hierarchy-explorer)
+
 # lmod-hierarchy-explorer
+
 This is a nodejs Passenger app meant to be run from Open OnDemand.
 
 It provides an interface similar to `module avail`, but on the whole hierarchy. Since a module might require others to be loaded first (hierarchy), when a user clicks on a module, that module and all prerequisite modules are automatically added to a `module load` command displayed at the top of the page. Since the command may fail, the command is run and its output is displayed at the top of the page.
